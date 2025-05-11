@@ -7,6 +7,9 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --sidebar-bg: #f0f0f0;
+  --main-content-bg: #ffffff;
+  --border-color: #cccccc;
 }
 
 @theme inline {
@@ -18,13 +21,84 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #121212;
+    --foreground: #e0e0e0;
+    --sidebar-bg: #1e1e1e;
+    --main-content-bg: #242424;
+    --border-color: #333333;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.page-container {
+  display: flex;
+  flex-grow: 1;
+  width: 100%;
+}
+
+.sidebar {
+  width: 25%;
+  min-width: 280px;
+  background-color: var(--sidebar-bg);
+}
+
+#sidebar-left {
+}
+
+#sidebar-right {
+}
+
+.main-content-area {
+  flex-grow: 1;
+  background-color: var(--main-content-bg);
+}
+
+@media (max-width: 768px) {
+  .page-container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-width: unset;
+    max-height: 50vh;
+    border-right: none !important;
+    border-left: none !important;
+  }
+
+  #sidebar-left .hs-table-container {
+    max-height: calc(50vh - 150px);
+    overflow-y: auto;
+  }
+  #sidebar-right .news-list-container {
+    max-height: calc(50vh - 100px);
+    overflow-y: auto;
+  }
+}
+
+.reactflow-wrapper {
+  height: 100% !important;
+}
+
+#tariff-visualization,
+.tariff-visualization-container {
+  height: calc(100vh - 60px - 4rem);
+  min-height: 400px;
+}
+
+@media (max-width: 768px) {
+  #tariff-visualization,
+  .tariff-visualization-container {
+    height: 60vh;
+    min-height: 300px;
+  }
 }
