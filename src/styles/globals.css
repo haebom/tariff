@@ -1,0 +1,157 @@
+:root {
+  --bg-color: #1e1e1e;
+  --fg-color: #d4d4d4;
+  --accent-color: #007acc;
+  --card-bg-color: #252526;
+  --border-color: #333333;
+  --hover-bg-color: #2a2d2e;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--fg-color);
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  line-height: 1.6;
+}
+
+/* Specific styles for the new layout will be needed, this is a starting point */
+/* The #container, #sidebar-left, #main-content, #sidebar-right styles might need adjustment 
+   as we move to a component-based structure with Next.js. 
+   We will likely use flexbox or grid directly in our page.tsx or specific layout components. 
+*/
+
+main.page-container { /* Assuming a main tag will wrap page content */
+  display: flex;
+  flex-direction: row;
+  min-height: 100vh;
+}
+
+aside.sidebar {
+  width: 25%;
+  min-width: 280px;
+  background-color: var(--card-bg-color);
+  padding: 1.5rem;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+section.main-content-area { /* For the central content area */
+  flex: 1;
+  padding: 1.5rem;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+h2 {
+  color: var(--accent-color);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
+  margin-top: 0;
+}
+
+input[type="text"] {
+  width: calc(100% - 1rem); /* Ensure padding doesn't make it overflow */
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  background-color: var(--bg-color);
+  color: var(--fg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.hs-table-container {
+  max-height: 45vh;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.hs-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.hs-table th, .hs-table td {
+  padding: 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.hs-table th {
+  background-color: #333;
+  position: sticky;
+  top: 0;
+  z-index: 10; /* Ensure header stays above scrolling content */
+}
+
+.hs-table tbody tr:hover {
+  background-color: var(--hover-bg-color);
+}
+
+.hs-chart {
+  display: block;
+  margin-top: 1rem;
+}
+
+.news-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.news-list li {
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+}
+
+.news-list li:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.news-list a {
+  color: var(--accent-color);
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.news-list a:hover {
+  text-decoration: underline;
+}
+
+.news-list span {
+  display: block;
+  font-size: 0.85em;
+  color: #aaa;
+  margin-top: 0.3rem;
+}
+
+.tariff-visualization-container svg {
+  width: 100%;
+  max-width: 900px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+/* Responsive adjustments for the new structure */
+@media (max-width: 900px) {
+  main.page-container {
+    flex-direction: column;
+  }
+
+  aside.sidebar {
+    width: 100%;
+    min-width: unset;
+    max-height: 50vh; 
+  }
+
+  section.main-content-area {
+    order: -1; /* Main content first on smaller screens */
+  }
+} 
