@@ -35,7 +35,7 @@ export async function GET() {
         'Cache-Control': 'no-cache, no-store, must-revalidate', // Prevent caching of this proxy response
       },
     });
-  } catch (error: any) { // Explicitly type error as any or unknown then check
+  } catch (error: unknown) {
     console.error("Error in /api/rss route:", error);
     let errorMessage = 'Failed to fetch RSS feed due to an internal error.';
     if (error instanceof Error) {

@@ -12,6 +12,35 @@ interface NewsItem {
   source?: string;
 }
 
+// Type definitions for parsed XML items
+interface RssItem {
+  title?: string | { '#text': string };
+  link?: string | { '@_href'?: string }; // Can also be an object if attributes are present
+  pubDate?: string;
+  description?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any; // Allow other fields, as RSS items can be diverse
+}
+
+interface AtomEntryLink {
+  '@_href'?: string;
+  '@_rel'?: string;
+  '@_type'?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+}
+
+interface AtomEntry {
+  title?: string | { '#text': string };
+  link?: AtomEntryLink | AtomEntryLink[];
+  updated?: string;
+  published?: string;
+  summary?: string | { '#text': string };
+  content?: string | { '#text': string };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+}
+
 // 파싱된 아이템의 최소 구조 정의 (선택적)
 // interface ParsedFeedItem { 
 //   title?: any;
@@ -63,38 +92,68 @@ export default function NewsFeed() {
 
         let items: NewsItem[] = [];
         if (result.rss && result.rss.channel && result.rss.channel.item) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           items = (Array.isArray(result.rss.channel.item) ? result.rss.channel.item : [result.rss.channel.item])
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map((item: any) => { 
+            .map((item: RssItem) => { 
+              let itemLink = '#';
+              if (typeof item.link === 'string') {
+                itemLink = item.link;
+              } else if (item.link && typeof item.link === 'object' && item.link['@_href']) {
+                itemLink = item.link['@_href'];
+              } else if (item.link && typeof item.link === 'object') { // Fallback for other link object structures
+                itemLink = String(item.link);
+              }
+
+              let itemTitle = 'No title';
+              if (typeof item.title === 'string') {
+                itemTitle = item.title;
+              } else if (item.title && typeof item.title === 'object' && item.title['#text']) {
+                itemTitle = item.title['#text'];
+              }
+
               return {
-                title: item.title || 'No title',
-                link: item.link || '#',
+                title: itemTitle,
+                link: itemLink,
                 pubDate: item.pubDate,
                 description: item.description,
                 source: result.rss.channel.title || 'Unknown Source'
               };
             });
         } else if (result.feed && result.feed.entry) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
            items = (Array.isArray(result.feed.entry) ? result.feed.entry : [result.feed.entry])
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map((entry: any) => { 
+            .map((entry: AtomEntry) => { 
               let atomLink = '#';
               if (entry.link) {
                 if (Array.isArray(entry.link)) {
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  const hrefLink = entry.link.find((l: any) => l['@_rel'] === 'alternate' || !l['@_rel']);
-                  atomLink = hrefLink ? hrefLink['@_href'] : (entry.link[0] ? entry.link[0]['@_href'] : '#');
+                  const hrefLink = entry.link.find((l: AtomEntryLink) => l['@_rel'] === 'alternate' || !l['@_rel']);
+                  atomLink = hrefLink ? (hrefLink['@_href'] || '#') : (entry.link[0] && entry.link[0]['@_href'] ? entry.link[0]['@_href'] : '#');
                 } else if (entry.link['@_href']) {
                   atomLink = entry.link['@_href'];
                 }
               }
+
+              let entryTitle = 'No title';
+              if (typeof entry.title === 'string') {
+                entryTitle = entry.title;
+              } else if (entry.title && typeof entry.title === 'object' && entry.title['#text']) {
+                entryTitle = entry.title['#text'];
+              }
+
+              let entryDescription = undefined;
+              if (typeof entry.summary === 'string') {
+                entryDescription = entry.summary;
+              } else if (entry.summary && typeof entry.summary === 'object' && entry.summary['#text']) {
+                entryDescription = entry.summary['#text'];
+              } else if (typeof entry.content === 'string') {
+                entryDescription = entry.content;
+              } else if (entry.content && typeof entry.content === 'object' && entry.content['#text']) {
+                entryDescription = entry.content['#text'];
+              }
+
               return {
-                title: entry.title || (entry.title && typeof entry.title === 'object' ? entry.title['#text'] : 'No title'),
+                title: entryTitle,
                 link: atomLink,
                 pubDate: entry.updated || entry.published,
-                description: entry.summary || (entry.content && typeof entry.content === 'object' ? entry.content['#text'] : entry.content),
+                description: entryDescription,
                 source: result.feed.title || 'Unknown Source'
               };
             });

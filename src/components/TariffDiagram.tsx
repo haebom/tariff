@@ -171,7 +171,7 @@ export default function TariffDiagram() {
         animated: false,
       }))
     );
-  }, [setNodes, setEdges, setSelectedTariffKeyword]);
+  }, [setSelectedTariffKeyword]);
 
   const onConnect = useCallback(
     (params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)),
@@ -202,7 +202,7 @@ export default function TariffDiagram() {
         setHighlightedEdgeIds(newHighlightedEdgeIds);
       }
     },
-    [setSelectedTariffKeyword, resetHighlights, setNodes, setEdges],
+    [setSelectedTariffKeyword, resetHighlights],
   );
 
   const onPaneClick = useCallback(() => {
