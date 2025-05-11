@@ -115,37 +115,50 @@ export default function NewsFeed() {
     (item.description && item.description.toLowerCase().includes(filterTerm.toLowerCase()))
   );
 
+  // Tailwind CSS classes for styling
+  const asideContainerClasses = "h-full flex flex-col bg-sidebar-bg text-foreground"; // Removed p-4, it's handled by parent in page.tsx
+  const inputClasses = "w-full p-2 my-4 mx-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 flex-shrink-0 max-w-[calc(100%-1rem)]"; // Added flex-shrink-0 and margin, max-width to prevent overflow due to parent padding
+  const listClasses = "list-none p-0 m-0 flex-grow overflow-y-auto px-2"; // Added flex-grow, overflow-y-auto, and horizontal padding
+  const listItemClasses = "mb-4 border-b border-gray-200 dark:border-gray-700 pb-2";
+  const linkClasses = "text-blue-600 dark:text-blue-400 hover:underline";
+  const titleClasses = "text-base font-medium mb-1";
+  const smallTextClasses = "text-xs text-gray-500 dark:text-gray-400 block mb-1";
+  const descriptionClasses = "text-sm text-gray-700 dark:text-gray-300 m-0";
+  const messageClasses = "p-4 text-center text-gray-500 dark:text-gray-400";
+
   if (isLoading) {
-    return <aside className="sidebar" id="sidebar-right"><p>Loading news...</p></aside>;
+    return <div className={`${asideContainerClasses} items-center justify-center`}><p className={messageClasses}>Loading news...</p></div>;
   }
 
   if (error) {
-    return <aside className="sidebar" id="sidebar-right"><p>Error loading news: {error}</p></aside>;
+    return <div className={`${asideContainerClasses} items-center justify-center`}><p className={messageClasses}>Error loading news: {error}</p></div>;
   }
 
   return (
-    <aside className="sidebar" id="sidebar-right" style={{ padding: '1rem' }}>
-      <h2 style={{ marginTop: 0 }}>Latest News (Tariffs)</h2>
+    // Use div instead of aside, as page.tsx already provides the semantic aside tag with sidebar class.
+    // This component will fill the div provided by page.tsx for the news feed area.
+    <div className={asideContainerClasses}>
+      {/* <h2 className={headingClasses}>Latest News (Tariffs)</h2> page.tsx already has a title for this section */}
       <input 
         type="text"
         placeholder="Filter news..."
-        value={filterTerm} // filterTerm이 selectedTariffKeyword에 의해 업데이트됨
-        onChange={(e) => setFilterTerm(e.target.value)} // 사용자가 직접 필터링도 가능
-        style={{ width: '100%', padding: '0.5rem', marginBottom: '1rem', borderRadius: '4px', border: '1px solid #ccc' }}
+        value={filterTerm} 
+        onChange={(e) => setFilterTerm(e.target.value)}
+        className={inputClasses}
       />
-      {filteredNewsItems.length === 0 && <p>No news items found matching your filter or feed is empty.</p>}
-      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+      {filteredNewsItems.length === 0 && !isLoading && <p className={messageClasses}>No news items found matching your filter or feed is empty.</p>}
+      <ul className={listClasses}>
         {filteredNewsItems.map((item, index) => (
-          <li key={`${item.link}-${item.title}-${index}`} style={{ marginBottom: '1rem', borderBottom: '1px solid #eee', paddingBottom: '0.5rem' }}>
-            <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit' }}>
-              <h3 style={{ fontSize: '1.1em', marginBottom: '0.25rem', color: '#007acc' }}>{item.title}</h3>
+          <li key={`${item.link}-${item.title}-${index}`} className={listItemClasses}>
+            <a href={item.link} target="_blank" rel="noopener noreferrer" className={linkClasses}>
+              <h3 className={titleClasses}>{item.title}</h3>
             </a>
-            {item.pubDate && <small style={{ color: '#555', display: 'block', marginBottom: '0.25rem' }}>{new Date(item.pubDate).toLocaleDateString()}</small>}
-            {item.description && <p style={{ fontSize: '0.9em', margin: 0, color: '#333' }} dangerouslySetInnerHTML={{ __html: item.description }}></p>}
-            {item.source && <small style={{color: '#777', display: 'block', marginTop: '0.25rem'}}>Source: {item.source}</small>}
+            {item.pubDate && <small className={smallTextClasses}>{new Date(item.pubDate).toLocaleDateString()}</small>}
+            {item.description && <p className={descriptionClasses} dangerouslySetInnerHTML={{ __html: item.description }}></p>}
+            {item.source && <small className={`${smallTextClasses} mt-1`}>Source: {item.source}</small>}
           </li>
         ))}
       </ul>
-    </aside>
+    </div>
   );
 } 

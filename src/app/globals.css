@@ -62,43 +62,58 @@ body {
   background-color: var(--main-content-bg);
 }
 
+/* React Flow가 부모 높이를 100% 사용하도록 함 */
+.reactflow-wrapper {
+  height: 100% !important; 
+}
+
+/* 데스크탑: 다이어그램 컨테이너 설정 */
+#tariff-visualization,
+.tariff-visualization-container {
+  /* height 속성은 page.tsx에서 flex-grow와 overflow-y-auto로 관리 */
+  min-height: 400px; /* 최소 높이 유지 */
+  width: 100%;       /* 부모 flex 아이템 내부에서 너비 채우기 */
+}
+
 @media (max-width: 768px) {
+  /* 모바일: 전체 페이지 컨테이너는 수직으로 변경 */
   .page-container {
     flex-direction: column;
+    /* page.tsx에서 h-screen 및 각 섹션 overflow-y-auto로 관리 */
   }
 
+  /* 모바일: 사이드바 전체 너비 사용 */
   .sidebar {
     width: 100%;
     min-width: unset;
-    max-height: 50vh;
-    border-right: none !important;
+    /* max-height는 page.tsx의 flex 및 각 컴포넌트 내부 스크롤로 대체 */
+    border-right: none !important; 
     border-left: none !important;
+    /* page.tsx에서 sidebar들에 flex flex-col overflow-hidden 등이 적용됨.
+       각 사이드바 컴포넌트 내부에서 h-full 및 overflow-y-auto 등으로 컨텐츠 스크롤 관리 필요 */
   }
 
+  /* 
+    모바일: 아래 사이드바 내부 컨테이너의 max-height 규칙들은 
+    page.tsx 레이아웃 변경 및 각 컴포넌트 내부 스크롤 처리로 대체될 것이므로 주석 처리합니다.
+    HSSearchSidebar.tsx와 NewsFeed.tsx 파일 수정 시, 
+    내부적으로 Tailwind CSS (e.g., h-full, overflow-y-auto)를 사용하여 스크롤을 관리하게 됩니다.
+  */
+  /*
   #sidebar-left .hs-table-container {
-    max-height: calc(50vh - 150px);
+    max-height: calc(50vh - 150px); 
     overflow-y: auto;
   }
   #sidebar-right .news-list-container {
     max-height: calc(50vh - 100px);
     overflow-y: auto;
   }
-}
+  */
 
-.reactflow-wrapper {
-  height: 100% !important;
-}
-
-#tariff-visualization,
-.tariff-visualization-container {
-  height: calc(100vh - 60px - 4rem);
-  min-height: 400px;
-}
-
-@media (max-width: 768px) {
+  /* 모바일: 다이어그램 컨테이너 최소 높이 설정 */
   #tariff-visualization,
   .tariff-visualization-container {
-    height: 60vh;
-    min-height: 300px;
+    /* height 속성은 page.tsx에서 flex-grow와 overflow-y-auto로 관리 */
+    min-height: 300px; /* 모바일 최소 높이 유지 */
   }
 }

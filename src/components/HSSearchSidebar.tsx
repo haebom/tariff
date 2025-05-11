@@ -76,17 +76,35 @@ export default function HSSearchSidebar() {
       }
       if (searchTerm) {
         const lowerCaseQuery = searchTerm.toLowerCase();
+        const isFromDiagram = selectedTariffKeyword && searchTerm === selectedTariffKeyword;
+        // 다이어그램 키워드는 공백, 쉼표, 세미콜론, %, 마침표 등을 기준으로 단어 분리. 길이가 1보다 큰 단어만 사용.
+        const searchWords = isFromDiagram 
+          ? lowerCaseQuery.split(/[\s,;%\.]+/).filter(word => word && word.length > 1) 
+          : [];
+
         currentData = currentData.filter(item => {
-          const hsCodeMatches = item.hscode.replace(/\./g, '').startsWith(lowerCaseQuery.replace(/[\.\s]/g, ''));
-          const descriptionMatches = item.description.toLowerCase().includes(lowerCaseQuery);
-          // 만약 searchTerm이 숫자와 점으로만 이루어져 있다면 HS 코드 검색에 더 큰 비중을 둡니다.
-          if (/^[\d\.]+$/.test(lowerCaseQuery)) {
-            return hsCodeMatches || descriptionMatches; // HS코드 우선, 없으면 설명
-          } else if (selectedTariffKeyword && searchTerm === selectedTariffKeyword) {
-             // 다이어그램에서 온 키워드면 설명에서 더 넓게 검색 (또는 특별한 로직)
-             return descriptionMatches || item.hscode.includes(lowerCaseQuery.split(' ')[0]); // 예: 키워드의 첫 단어가 코드에 포함되는지
+          const normalizedHsCode = item.hscode.replace(/\./g, '');
+          const lowerCaseDescription = item.description.toLowerCase();
+
+          if (isFromDiagram && searchWords.length > 0) {
+            // 다이어그램에서 온 키워드: 분리된 단어 중 하나라도 설명이나 HS코드에 포함되는지 확인
+            // 예: "Tariff", "US", "Content", "25" 등의 단어가 설명이나 코드에 나타나는지
+            return searchWords.some(word => {
+              if (!word) return false; // 빈 단어는 스킵
+              const cleanWord = word.replace(/\./g, ''); // HS 코드와 비교를 위해 단어에서도 점 제거
+              return lowerCaseDescription.includes(word) || // 원본 단어로 설명 검색
+                     normalizedHsCode.includes(cleanWord);   // 점 제거된 단어로 HS 코드 검색
+            });
+          } else {
+            // 일반 검색 또는 숫자/점으로만 이루어진 HS 코드 검색
+            const hsCodeMatchesDirect = normalizedHsCode.startsWith(lowerCaseQuery.replace(/[\.\s]/g, ''));
+            const descriptionMatchesDirect = lowerCaseDescription.includes(lowerCaseQuery);
+            
+            if (/^[\d\.]+$/.test(lowerCaseQuery) && !isFromDiagram) { // 검색어가 숫자와 점으로만 (다이어그램 키워드 아닐 때)
+              return hsCodeMatchesDirect || descriptionMatchesDirect;
+            }
+            return descriptionMatchesDirect || hsCodeMatchesDirect; // 일반 텍스트 검색 (다이어그램 키워드 아닐 때)
           }
-          return descriptionMatches || hsCodeMatches; // 설명 또는 코드 매치
         });
       }
       setFilteredHsData(currentData);
@@ -131,27 +149,27 @@ export default function HSSearchSidebar() {
   const tableHeaders = ['HS Code', 'Description', 'Section', 'Level'];
 
   // Tailwind CSS를 사용한 스타일링 추가
-  const asideClasses = "sidebar p-4 border-gray-300 dark:border-gray-700"; // 기본 패딩 및 보더 색상 (globals.css와 연계)
+  const asideClasses = "sidebar p-4 border-gray-300 dark:border-gray-700 flex flex-col h-full"; 
   const inputClasses = "w-full p-2 mb-4 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400";
-  const selectClasses = "w-full p-2 mb-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600"; // select도 mb-4로 통일하거나 필요에 따라 조정
-  const tableContainerClasses = "hs-table-container overflow-auto"; // globals.css의 max-height와 함께 사용
+  const selectClasses = "w-full p-2 mb-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600"; 
+  const tableContainerClasses = "hs-table-container overflow-auto flex-grow"; 
   const tableClasses = "hs-table w-full text-sm text-left text-gray-500 dark:text-gray-400";
   const thClasses = "px-4 py-2 text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400";
   const tdClasses = "px-4 py-2 border-b border-gray-200 dark:border-gray-700";
   const messageClasses = "text-center p-4 text-gray-500 dark:text-gray-400";
 
   if (isLoading) {
-    return <aside className={`${asideClasses} md:border-r`} id="sidebar-left"><p className={messageClasses}>Loading data...</p></aside>;
+    return <aside className={`${asideClasses} md:border-r items-center justify-center`} id="sidebar-left"><p className={messageClasses}>Loading data...</p></aside>;
   }
 
   if (error) {
-    return <aside className={`${asideClasses} md:border-r`} id="sidebar-left"><p className={messageClasses}>Error loading data: {error}</p></aside>;
+    return <aside className={`${asideClasses} md:border-r items-center justify-center`} id="sidebar-left"><p className={messageClasses}>Error loading data: {error}</p></aside>;
   }
 
   return (
     <aside className={`${asideClasses} md:border-r`} id="sidebar-left">
-      <h2 className="text-xl font-semibold mb-4">HS Sections + Search</h2>
-      <div className="filters-container mb-4">
+      <h2 className="text-xl font-semibold mb-4 flex-shrink-0">HS Sections + Search</h2>
+      <div className="filters-container mb-4 flex-shrink-0">
         <select 
           value={selectedSection} 
           onChange={(e) => setSelectedSection(e.target.value)}
@@ -226,7 +244,7 @@ export default function HSSearchSidebar() {
           </tbody>
         </table>
       </div>
-      <canvas id="hs-chart-canvas" className="hs-chart w-full h-12 mt-4" width="200" height="50"></canvas> {/* Tailwind w-full, h-12 적용 */}
+      <canvas id="hs-chart-canvas" className="hs-chart w-full h-12 mt-4 flex-shrink-0" width="200" height="50"></canvas> 
     </aside>
   );
 } 
