@@ -16,45 +16,46 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import { useSharedState } from '@/context/AppContext';
 
-const BASE_PRICE = 100; // 예시 기본 가격
-const INITIAL_PRICE_DISPLAY = `$${BASE_PRICE} 📦 (최종 관세 결과를 클릭하여 예상 가격을 확인하세요)`;
+const BASE_PRICE = 100;
+const INITIAL_PRICE_DISPLAY = `$${BASE_PRICE} 📦 (Click a final tariff result node to see the estimated price)`;
 
-// 관세 계산 로직을 위한 헬퍼 함수
+// Updated helper function for price calculation
 const calculatePriceDisplay = (basePrice: number, label: string): string => {
   if (!label) return INITIAL_PRICE_DISPLAY;
 
-  const percentageMatch = label.match(/(\\d+)%\\sTariff/);
-  const fentanylMatch = label.match(/(\\d+)%\\sFentanyl\\sTariff/);
-  const fullValueMatch = label.match(/(\\d+)%\\sTariff\\son\\sFull\\sCustoms\\sValue/);
-  const usContentMatch = label.match(/Non-US\\sContent\\sTariffed\\sat\\s(\\d+)%/);
+  const noTariffsMatch = label.toLowerCase().includes('no tariffs');
+  const percentageMatch = label.match(/(\d+)%\sTariff(?:\s|$)/i); // Includes cases like "X% Tariff" or "X% Fentanyl Tariff"
+  const fentanylTariffMatch = label.match(/(\d+)%\sFentanyl\sTariff/i);
+  const fullValueMatch = label.match(/(\d+)%\sTariff\son\sFull\sCustoms\sValue/i);
+  const usContentFreeMatch = label.match(/US\sContent\sIs\sTariff\sFree;\sNon-US\sContent\sTariffed\sat\s(\d+)%/i);
 
   let rate = 0;
   let finalPrice = basePrice;
-  let note = "";
+  let calculationNote = "";
 
-  if (label.includes('No Tariffs')) {
-    return `$${basePrice.toFixed(2)} 📦 (관세 없음)`;
-  } else if (fentanylMatch) {
-    rate = parseFloat(fentanylMatch[1]) / 100;
+  if (noTariffsMatch) {
+    return `$${basePrice.toFixed(2)} 📦 (No Tariffs)`;
+  } else if (usContentFreeMatch) {
+    rate = parseFloat(usContentFreeMatch[1]) / 100;
+    finalPrice = basePrice * (1 + rate); // Assuming 100% non-US content for this example
+    calculationNote = ` (Non-US content tariffed at ${usContentFreeMatch[1]}%; US content tariff-free. Example assumes 100% non-US content.)`;
+    return `$${basePrice.toFixed(2)} 📦 → $${finalPrice.toFixed(2)}${calculationNote}`;
+  } else if (fentanylTariffMatch) {
+    rate = parseFloat(fentanylTariffMatch[1]) / 100;
     finalPrice = basePrice * (1 + rate);
-    return `$${basePrice} 📦 + ${fentanylMatch[1]}% Fentanyl Tariff = $${finalPrice.toFixed(2)}`;
-  } else if (percentageMatch) {
-    rate = parseFloat(percentageMatch[1]) / 100;
-    finalPrice = basePrice * (1 + rate);
-    return `$${basePrice} 📦 + ${percentageMatch[1]}% Tariff = $${finalPrice.toFixed(2)}`;
+    return `$${basePrice.toFixed(2)} 📦 + ${fentanylTariffMatch[1]}% Fentanyl Tariff = $${finalPrice.toFixed(2)}`;
   } else if (fullValueMatch) {
     rate = parseFloat(fullValueMatch[1]) / 100;
     finalPrice = basePrice * (1 + rate);
-    note = " (전체 세관 가격 기준)";
-    return `$${basePrice} 📦 + ${fullValueMatch[1]}% Tariff = $${finalPrice.toFixed(2)}${note}`;
-  } else if (usContentMatch) {
-    rate = parseFloat(usContentMatch[1]) / 100;
-    finalPrice = basePrice * (1 + rate); // 예시: 100% 비미국산 콘텐츠로 가정
-    note = ` (비미국산 콘텐츠에 ${usContentMatch[1]}% 적용, 100% 비미국산으로 가정 시)`;
-    return `$${basePrice} 📦 -> $${finalPrice.toFixed(2)}${note}`;
+    calculationNote = " (on full customs value)";
+    return `$${basePrice.toFixed(2)} 📦 + ${fullValueMatch[1]}% Tariff = $${finalPrice.toFixed(2)}${calculationNote}`;
+  } else if (percentageMatch) {
+    rate = parseFloat(percentageMatch[1]) / 100;
+    finalPrice = basePrice * (1 + rate);
+    return `$${basePrice.toFixed(2)} 📦 + ${percentageMatch[1]}% Tariff = $${finalPrice.toFixed(2)}`;
   }
 
-  return `$${basePrice} 📦 (관세 정보: "${label}")`;
+  return `$${basePrice.toFixed(2)} 📦 (Tariff info: "${label}")`; // Fallback
 };
 
 // 초기 노드 정의
@@ -152,26 +153,25 @@ export default function TariffDiagram() {
   const [highlightedEdgeIds, setHighlightedEdgeIds] = useState<string[]>([]);
   const [priceDisplay, setPriceDisplay] = useState<string>(INITIAL_PRICE_DISPLAY);
 
-  const resetHighlights = () => {
+  const resetHighlights = useCallback(() => {
     setHighlightedNodeIds([]);
     setHighlightedEdgeIds([]);
     setSelectedTariffKeyword(null);
-    setPriceDisplay(INITIAL_PRICE_DISPLAY); // 가격 표시 초기화
-    // Reset node and edge styles to initial
+    setPriceDisplay(INITIAL_PRICE_DISPLAY);
     setNodes((nds) =>
       nds.map((n) => ({
         ...n,
-        style: initialNodes.find(inN => inN.id === n.id)?.style || n.style, // Restore original style
+        style: initialNodes.find(inN => inN.id === n.id)?.style || n.style,
       }))
     );
     setEdges((eds) =>
       eds.map((e) => ({
         ...e,
-        style: initialEdges.find(inE => inE.id === e.id)?.style || e.style, // Restore original style
+        style: initialEdges.find(inE => inE.id === e.id)?.style || e.style,
         animated: false,
       }))
     );
-  };
+  }, [setNodes, setEdges, setSelectedTariffKeyword]);
 
   const onConnect = useCallback(
     (params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)),
@@ -180,7 +180,7 @@ export default function TariffDiagram() {
 
   const onNodeClick = useCallback(
     (_event: React.MouseEvent, node: Node) => {
-      resetHighlights(); // Clear previous highlights
+      resetHighlights();
 
       if (node.type === 'output') {
         const keyword = node.data.keyword || node.data.label;
@@ -190,7 +190,6 @@ export default function TariffDiagram() {
         const newHighlightedNodeIds = [node.id];
         const newHighlightedEdgeIds: string[] = [];
 
-        // Find incoming edges to the clicked node
         const incomingEdges = initialEdges.filter(edge => edge.target === node.id);
         incomingEdges.forEach(edge => {
           newHighlightedEdgeIds.push(edge.id);
@@ -203,14 +202,13 @@ export default function TariffDiagram() {
         setHighlightedEdgeIds(newHighlightedEdgeIds);
       }
     },
-    [setSelectedTariffKeyword, setNodes, setEdges], // setNodes, setEdges for resetHighlights dependency
+    [setSelectedTariffKeyword, resetHighlights, setNodes, setEdges],
   );
 
   const onPaneClick = useCallback(() => {
     resetHighlights();
-  }, [setNodes, setEdges, setSelectedTariffKeyword]); // Dependencies for resetHighlights
+  }, [resetHighlights]);
 
-  // Apply highlighting styles dynamically
   useEffect(() => {
     setNodes((nds) =>
       nds.map((n) => {
@@ -219,13 +217,13 @@ export default function TariffDiagram() {
         return {
           ...n,
           style: {
-            ...(originalNode?.style || {}), // Start with original style
-            ...(isHighlighted && n.type !== 'input' ? { // Do not highlight the main title node style, only border
-                 ...(n.type === 'output' ? { background: HIGHLIGHT_COLOR, color: 'white' } : {}), // Output nodes get full highlight
+            ...(originalNode?.style || {}),
+            ...(isHighlighted && n.type !== 'input' ? {
+                 ...(n.type === 'output' ? { background: HIGHLIGHT_COLOR, color: 'white' } : {}),
                  border: `2px solid ${HIGHLIGHT_COLOR}`, 
                  boxShadow: `0 0 10px ${HIGHLIGHT_COLOR}` 
                 } : {}),
-            ...(n.id === 'title' && isHighlighted ? { border: `2px solid ${HIGHLIGHT_COLOR}` } : {}) // Special case for title border if part of path
+            ...(n.id === 'title' && isHighlighted ? { border: `2px solid ${HIGHLIGHT_COLOR}` } : {}),
           },
         };
       })
@@ -241,7 +239,7 @@ export default function TariffDiagram() {
             stroke: isHighlighted ? HIGHLIGHT_COLOR : (initialEdges.find(inE => inE.id === e.id)?.style?.stroke || '#b1b1b7'),
             strokeWidth: isHighlighted ? 2.5 : 1.5,
           },
-          animated: isHighlighted, // Animate highlighted edges
+          animated: isHighlighted,
           markerEnd: {
             type: MarkerType.ArrowClosed,
             color: isHighlighted ? HIGHLIGHT_COLOR : '#b1b1b7',
@@ -252,25 +250,9 @@ export default function TariffDiagram() {
   }, [highlightedNodeIds, highlightedEdgeIds, setNodes, setEdges]);
 
   return (
-    <div style={{ height: 'calc(100vh - 60px)', width: '100%', background: '#f0f0f0', position: 'relative' }}>
+    <div className="w-full h-full bg-gray-100 relative">
       <div 
-        style={{ 
-          position: 'absolute', 
-          top: '20px', 
-          left: '50%', 
-          transform: 'translateX(-50%)', 
-          zIndex: 1000, // React Flow 컴포넌트 위에 있도록 zIndex 설정
-          background: 'rgba(255, 255, 255, 0.9)', 
-          padding: '10px 15px', 
-          borderRadius: '8px', 
-          border: '1px solid #ccc',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-          fontSize: '0.9em',
-          fontWeight: 'bold',
-          textAlign: 'center',
-          minWidth: '300px',
-          color: '#333'
-        }}
+        className="absolute top-5 left-1/2 transform -translate-x-1/2 z-10 bg-white bg-opacity-90 p-2.5 px-4 rounded-lg border border-gray-300 shadow-lg text-sm font-bold text-center min-w-[320px] text-gray-800"
       >
         {priceDisplay}
       </div>
@@ -284,13 +266,13 @@ export default function TariffDiagram() {
         onPaneClick={onPaneClick}
         fitView
         attributionPosition="bottom-left"
-        defaultViewport={{ x: 0, y: 0, zoom: 0.7 }}
+        className="tariff-flow"
         minZoom={0.2}
-        maxZoom={2}
+        maxZoom={4}
       >
         <MiniMap nodeColor={nodeColor} nodeStrokeWidth={3} zoomable pannable />
         <Controls />
-        <Background color="#aaa" gap={16} />
+        <Background color="#ccc" gap={20} />
       </ReactFlow>
     </div>
   );
