@@ -61,39 +61,39 @@ const calculatePriceDisplay = (basePrice: number, label: string): string => {
 // 초기 노드 정의
 const initialNodes: Node[] = [
   // Main Title (not a real node, but can be represented or handled by overall page title)
-  { id: 'title', type: 'input', data: { label: 'Hardware Products Imported To The United States From' }, position: { x: 400, y: 0 }, selectable: false, draggable: false, style: { fontWeight: 'bold', fontSize: '1.2em', width: 400, textAlign: 'center', background: '#5D70B4', color: 'white', border: 'none' } },
+  { id: 'title', type: 'input', data: { label: 'Hardware Products Imported To The United States From' }, position: { x: 280, y: 0 }, selectable: false, draggable: false, style: { fontWeight: 'bold', fontSize: '1.2em', width: 350, textAlign: 'center', background: '#5D70B4', color: 'white', border: 'none' } },
 
-  // Sources
-  { id: 'china', data: { label: 'China' }, position: { x: 100, y: 100 }, style: { border: '1px solid #ccc', padding: 10, width: 150, textAlign: 'center' } },
-  { id: 'can-mex', data: { label: 'Canada/Mexico' }, position: { x: 450, y: 100 }, style: { border: '1px solid #ccc', padding: 10, width: 150, textAlign: 'center' } },
-  { id: 'other-regions', data: { label: 'All Other Regions' }, position: { x: 800, y: 100 }, style: { border: '1px solid #ccc', padding: 10, width: 150, textAlign: 'center' } },
+  // Sources (Scaling factor: 0.7 approx)
+  { id: 'china', data: { label: 'China' }, position: { x: 70, y: 70 }, style: { border: '1px solid #ccc', padding: 8, width: 120, textAlign: 'center' } },
+  { id: 'can-mex', data: { label: 'Canada/Mexico' }, position: { x: 315, y: 70 }, style: { border: '1px solid #ccc', padding: 8, width: 120, textAlign: 'center' } },
+  { id: 'other-regions', data: { label: 'All Other Regions' }, position: { x: 560, y: 70 }, style: { border: '1px solid #ccc', padding: 8, width: 120, textAlign: 'center' } },
 
   // China Path
-  { id: 'china-q1', type: 'default', data: { label: 'April 11th Exemption?' }, position: { x: 100, y: 200 }, style: { width: 150, textAlign: 'center' } },
-  { id: 'china-a1-no', type: 'output', data: { label: '145% Tariff', keyword: 'China 145% Tariff' }, position: { x: 0, y: 300 }, style: { background: '#5D70B4', color: 'white', width: 150, textAlign: 'center' } },
-  { id: 'china-a1-yes', type: 'output', data: { label: '20% Fentanyl Tariff', keyword: 'China Fentanyl Tariff' }, position: { x: 200, y: 300 }, style: { background: '#82D0D4', color: 'black', width: 150, textAlign: 'center' } },
-  { id: 'china-q2', type: 'default', data: { label: '>20% of Content from US?' }, position: { x: -50, y: 400 }, style: { width: 200, textAlign: 'center' } }, // Positioned relative to 145% Tariff path
-  { id: 'china-a2-no', type: 'output', data: { label: '145% Tariff on Full Customs Value', keyword: 'China 145% Full Value' }, position: { x: -150, y: 500 }, style: { background: '#82D0D4', color: 'black', width: 200, textAlign: 'center' } },
-  { id: 'china-a2-yes', type: 'output', data: { label: 'US Content Is Tariff Free; Non-US Content Tariffed at 145%', keyword: 'China 145% US Content Free' }, position: { x: 50, y: 500 }, style: { background: '#82D0D4', color: 'black', width: 200, textAlign: 'center' } },
+  { id: 'china-q1', type: 'default', data: { label: 'April 11th Exemption?' }, position: { x: 70, y: 140 }, style: { width: 120, textAlign: 'center' } },
+  { id: 'china-a1-no', type: 'output', data: { label: '145% Tariff', keyword: 'China 145% Tariff' }, position: { x: 0, y: 210 }, style: { background: '#5D70B4', color: 'white', width: 120, textAlign: 'center' } },
+  { id: 'china-a1-yes', type: 'output', data: { label: '20% Fentanyl Tariff', keyword: 'China Fentanyl Tariff' }, position: { x: 140, y: 210 }, style: { background: '#82D0D4', color: 'black', width: 120, textAlign: 'center' } },
+  { id: 'china-q2', type: 'default', data: { label: '>20% of Content from US?' }, position: { x: -35, y: 280 }, style: { width: 150, textAlign: 'center' } },
+  { id: 'china-a2-no', type: 'output', data: { label: '145% Tariff on Full Customs Value', keyword: 'China 145% Full Value' }, position: { x: -105, y: 350 }, style: { background: '#82D0D4', color: 'black', width: 160, textAlign: 'center' } },
+  { id: 'china-a2-yes', type: 'output', data: { label: 'US Content Is Tariff Free; Non-US Content Tariffed at 145%', keyword: 'China 145% US Content Free' }, position: { x: 35, y: 350 }, style: { background: '#82D0D4', color: 'black', width: 160, textAlign: 'center' } },
 
   // Canada/Mexico Path
-  { id: 'canmex-q1', type: 'default', data: { label: 'USMCA Compliant?' }, position: { x: 450, y: 200 }, style: { width: 150, textAlign: 'center' } },
-  { id: 'canmex-a1-no', type: 'output', data: { label: '25% Tariff', keyword: 'Canada/Mexico Non-USMCA 25% Tariff' }, position: { x: 350, y: 300 }, style: { background: '#5D70B4', color: 'white', width: 150, textAlign: 'center' } },
-  { id: 'canmex-a1-yes', type: 'output', data: { label: 'No Tariffs', keyword: 'Canada/Mexico USMCA No Tariffs' }, position: { x: 550, y: 300 }, style: { background: '#82D0D4', color: 'black', width: 150, textAlign: 'center' } },
-  { id: 'canmex-q2', type: 'default', data: { label: 'April 11th Exemption?' }, position: { x: 350, y: 400 } , style: { width: 150, textAlign: 'center' } }, // Below 25% Tariff
-  { id: 'canmex-a2-no', type: 'output', data: { label: '25% Tariff', keyword: 'Canada/Mexico Non-USMCA 25% No Exemption' }, position: { x: 250, y: 500 }, style: { background: '#5D70B4', color: 'white', width: 150, textAlign: 'center' } },
-  { id: 'canmex-a2-yes', type: 'output', data: { label: 'No Tariffs', keyword: 'Canada/Mexico Non-USMCA No Tariffs Exemption' }, position: { x: 450, y: 500 }, style: { background: '#82D0D4', color: 'black', width: 150, textAlign: 'center' } },
-  { id: 'canmex-q3', type: 'default', data: { label: '>20% of Content from US?' }, position: { x: 200, y: 600 }, style: { width: 200, textAlign: 'center' } }, // Below the second 25% tariff
-  { id: 'canmex-a3-no', type: 'output', data: { label: '25% Tariff on Full Customs Value', keyword: 'Canada/Mexico 25% Full Value' }, position: { x: 100, y: 700 }, style: { background: '#82D0D4', color: 'black', width: 200, textAlign: 'center' } },
-  { id: 'canmex-a3-yes', type: 'output', data: { label: 'US Content Is Tariff Free; Non-US Content Tariffed at 25%', keyword: 'Canada/Mexico 25% US Content Free' }, position: { x: 300, y: 700 }, style: { background: '#82D0D4', color: 'black', width: 200, textAlign: 'center' } },
+  { id: 'canmex-q1', type: 'default', data: { label: 'USMCA Compliant?' }, position: { x: 315, y: 140 }, style: { width: 120, textAlign: 'center' } },
+  { id: 'canmex-a1-no', type: 'output', data: { label: '25% Tariff', keyword: 'Canada/Mexico Non-USMCA 25% Tariff' }, position: { x: 245, y: 210 }, style: { background: '#5D70B4', color: 'white', width: 120, textAlign: 'center' } },
+  { id: 'canmex-a1-yes', type: 'output', data: { label: 'No Tariffs', keyword: 'Canada/Mexico USMCA No Tariffs' }, position: { x: 385, y: 210 }, style: { background: '#82D0D4', color: 'black', width: 120, textAlign: 'center' } },
+  { id: 'canmex-q2', type: 'default', data: { label: 'April 11th Exemption?' }, position: { x: 245, y: 280 } , style: { width: 120, textAlign: 'center' } },
+  { id: 'canmex-a2-no', type: 'output', data: { label: '25% Tariff', keyword: 'Canada/Mexico Non-USMCA 25% No Exemption' }, position: { x: 175, y: 350 }, style: { background: '#5D70B4', color: 'white', width: 120, textAlign: 'center' } },
+  { id: 'canmex-a2-yes', type: 'output', data: { label: 'No Tariffs', keyword: 'Canada/Mexico Non-USMCA No Tariffs Exemption' }, position: { x: 315, y: 350 }, style: { background: '#82D0D4', color: 'black', width: 120, textAlign: 'center' } },
+  { id: 'canmex-q3', type: 'default', data: { label: '>20% of Content from US?' }, position: { x: 140, y: 420 }, style: { width: 150, textAlign: 'center' } },
+  { id: 'canmex-a3-no', type: 'output', data: { label: '25% Tariff on Full Customs Value', keyword: 'Canada/Mexico 25% Full Value' }, position: { x: 70, y: 490 }, style: { background: '#82D0D4', color: 'black', width: 160, textAlign: 'center' } },
+  { id: 'canmex-a3-yes', type: 'output', data: { label: 'US Content Is Tariff Free; Non-US Content Tariffed at 25%', keyword: 'Canada/Mexico 25% US Content Free' }, position: { x: 210, y: 490 }, style: { background: '#82D0D4', color: 'black', width: 160, textAlign: 'center' } },
 
   // Other Regions Path
-  { id: 'other-q1', type: 'default', data: { label: 'April 11th Exemption?' }, position: { x: 800, y: 200 }, style: { width: 150, textAlign: 'center' } },
-  { id: 'other-a1-no', type: 'output', data: { label: '10% Tariff', keyword: 'Other Regions 10% Tariff' }, position: { x: 700, y: 300 }, style: { background: '#5D70B4', color: 'white', width: 150, textAlign: 'center' } },
-  { id: 'other-a1-yes', type: 'output', data: { label: 'No Tariffs', keyword: 'Other Regions No Tariffs Exemption' }, position: { x: 900, y: 300 }, style: { background: '#82D0D4', color: 'black', width: 150, textAlign: 'center' } },
-  { id: 'other-q2', type: 'default', data: { label: '>20% of Content from US?' }, position: { x: 650, y: 400 }, style: { width: 200, textAlign: 'center' } }, // Below 10% Tariff
-  { id: 'other-a2-no', type: 'output', data: { label: '10% Tariff on Full Customs Value', keyword: 'Other Regions 10% Full Value' }, position: { x: 550, y: 500 }, style: { background: '#82D0D4', color: 'black', width: 200, textAlign: 'center' } },
-  { id: 'other-a2-yes', type: 'output', data: { label: 'US Content Is Tariff Free; Non-US Content Tariffed at 10%', keyword: 'Other Regions 10% US Content Free' }, position: { x: 750, y: 500 }, style: { background: '#82D0D4', color: 'black', width: 200, textAlign: 'center' } },
+  { id: 'other-q1', type: 'default', data: { label: 'April 11th Exemption?' }, position: { x: 560, y: 140 }, style: { width: 120, textAlign: 'center' } },
+  { id: 'other-a1-no', type: 'output', data: { label: '10% Tariff', keyword: 'Other Regions 10% Tariff' }, position: { x: 490, y: 210 }, style: { background: '#5D70B4', color: 'white', width: 120, textAlign: 'center' } },
+  { id: 'other-a1-yes', type: 'output', data: { label: 'No Tariffs', keyword: 'Other Regions No Tariffs Exemption' }, position: { x: 630, y: 210 }, style: { background: '#82D0D4', color: 'black', width: 120, textAlign: 'center' } },
+  { id: 'other-q2', type: 'default', data: { label: '>20% of Content from US?' }, position: { x: 455, y: 280 }, style: { width: 150, textAlign: 'center' } },
+  { id: 'other-a2-no', type: 'output', data: { label: '10% Tariff on Full Customs Value', keyword: 'Other Regions 10% Full Value' }, position: { x: 385, y: 350 }, style: { background: '#82D0D4', color: 'black', width: 160, textAlign: 'center' } },
+  { id: 'other-a2-yes', type: 'output', data: { label: 'US Content Is Tariff Free; Non-US Content Tariffed at 10%', keyword: 'Other Regions 10% US Content Free' }, position: { x: 525, y: 350 }, style: { background: '#82D0D4', color: 'black', width: 160, textAlign: 'center' } },
 ];
 
 // 초기 엣지 정의
@@ -250,9 +250,9 @@ export default function TariffDiagram() {
   }, [highlightedNodeIds, highlightedEdgeIds, setNodes, setEdges]);
 
   return (
-    <div className="w-full h-full bg-gray-100 relative">
+    <div className="w-full h-full bg-gray-100 dark:bg-gray-800 relative reactflow-wrapper">
       <div 
-        className="absolute top-5 left-1/2 transform -translate-x-1/2 z-10 bg-white bg-opacity-90 p-2.5 px-4 rounded-lg border border-gray-300 shadow-lg text-sm font-bold text-center min-w-[320px] text-gray-800"
+        className="absolute top-5 left-1/2 transform -translate-x-1/2 z-10 bg-white dark:bg-gray-700 bg-opacity-90 dark:bg-opacity-90 p-2.5 px-4 rounded-lg border border-gray-300 dark:border-gray-600 shadow-lg text-sm font-medium text-center min-w-[320px] text-gray-800 dark:text-gray-200"
       >
         {priceDisplay}
       </div>
@@ -266,7 +266,7 @@ export default function TariffDiagram() {
         onPaneClick={onPaneClick}
         fitView
         attributionPosition="bottom-left"
-        className="tariff-flow"
+        className="tariff-flow w-full h-full"
         minZoom={0.2}
         maxZoom={4}
       >

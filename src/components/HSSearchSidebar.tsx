@@ -151,7 +151,6 @@ export default function HSSearchSidebar() {
   // Tailwind CSS를 사용한 스타일링 추가
   const asideClasses = "sidebar p-4 border-gray-300 dark:border-gray-700 flex flex-col h-full"; 
   const inputClasses = "w-full p-2 mb-4 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400";
-  const selectClasses = "w-full p-2 mb-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600"; 
   const tableContainerClasses = "hs-table-container overflow-auto flex-grow"; 
   const tableClasses = "hs-table w-full text-sm text-left text-gray-500 dark:text-gray-400";
   const thClasses = "px-4 py-2 text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400";
@@ -169,25 +168,58 @@ export default function HSSearchSidebar() {
   return (
     <aside className={`${asideClasses} md:border-r`} id="sidebar-left">
       <h2 className="text-xl font-semibold mb-4 flex-shrink-0">HS Sections + Search</h2>
-      <div className="filters-container mb-4 flex-shrink-0">
-        <select 
-          value={selectedSection} 
-          onChange={(e) => setSelectedSection(e.target.value)}
-          className={selectClasses}
+      
+      {/* "All Sections" Button */}
+      <div className="mb-2 flex-shrink-0">
+        <button 
+          onClick={() => { setSelectedSection(''); setSearchTerm(''); }}
+          className={`w-full p-2 text-left rounded-md border dark:border-gray-600 transition-colors ${!selectedSection && !searchTerm ? 'bg-blue-600 text-white dark:bg-blue-700' : 'bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600'}`}
         >
-          <option value="">All Sections</option>
-          {sections.map(sec => (
-            <option key={sec.section} value={sec.section}>
-              {`${sec.section} - ${sec.name}`}
-            </option>
-          ))}
-        </select>
+          All Sections / Clear Search
+        </button>
+      </div>
+
+      {/* HS Section Table List */}
+      {sections.length > 0 && (
+        <div className="mb-4 flex-shrink-0 border rounded-md dark:border-gray-600 overflow-hidden">
+          <div className="max-h-60 overflow-y-auto"> {/* Limit height and allow scroll for section list if too long */}
+            <table className="w-full text-sm text-left">
+              <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
+                <tr>
+                  <th className="p-2 font-medium text-gray-600 dark:text-gray-300">Section</th>
+                  <th className="p-2 font-medium text-gray-600 dark:text-gray-300">Name</th>
+                  <th className="p-2 font-medium text-gray-600 dark:text-gray-300">HS Chapters</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                {sections.map(sec => (
+                  <tr 
+                    key={sec.section} 
+                    onClick={() => { setSelectedSection(sec.section); setSearchTerm(''); }} 
+                    className={`cursor-pointer transition-colors ${selectedSection === sec.section ? 'bg-blue-100 dark:bg-blue-900' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                    title={`Filter by Section: ${sec.section} - ${sec.name}`}
+                  >
+                    <td className="p-2 whitespace-nowrap w-1/6 text-center font-medium text-gray-700 dark:text-gray-300">{sec.section}</td>
+                    <td className="p-2 w-4/6 text-gray-700 dark:text-gray-300">{sec.name}</td>
+                    <td className="p-2 whitespace-nowrap w-1/6 text-center text-gray-500 dark:text-gray-400">
+                      {sec.chapters || 'N/A'} {/* Display chapters range, fallback to N/A */}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Search Input - Remains below the section list */}
+      <div className="mb-4 flex-shrink-0">
         <input 
           type="text" 
-          placeholder="Search HS Code or Description..."
+          placeholder={`Search HS Code or Description ${selectedSection ? 'within Section ' + selectedSection : 'across all sections'}...`}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className={inputClasses}
+          className={inputClasses} 
         />
       </div>
       
