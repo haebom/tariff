@@ -11,13 +11,13 @@ const MAX_TABLE_ROWS = 50;
 export default function HSSearchSidebar() {
   const [searchTerm, setSearchTerm] = useState('');
   const [sections, setSections] = useState<HSSection[]>([]);
-  const [hsData, setHsData] = useState<HSData[]>([]);
-  const [filteredHsData, setFilteredHsData] = useState<HSData[]>([]);
-  const [displayData, setDisplayData] = useState<HSData[]>([]);
+  const [hsData, setHsData] = useState<HSData[]>([]); // 전체 원본 HS 데이터
+  const [filteredHsData, setFilteredHsData] = useState<HSData[]>([]); // 필터링된 결과 (초기에는 비어있음)
+  const [displayData, setDisplayData] = useState<HSData[]>([]); // 화면에 표시될 데이터 (MAX_TABLE_ROWS 제한)
   const [chartData, setChartData] = useState({ count: 0, total: 0 });
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); // 데이터 로딩 상태
   const [error, setError] = useState<string | null>(null);
-  const [selectedSection, setSelectedSection] = useState<string>(''); // ''는 모든 섹션을 의미
+  const [selectedSection, setSelectedSection] = useState<string>('');
 
   const { selectedTariffKeyword } = useSharedState(); // 공유 상태 가져오기
 
@@ -46,6 +46,8 @@ export default function HSSearchSidebar() {
     async function loadData() {
       setIsLoading(true);
       setError(null);
+      setFilteredHsData([]); // 데이터 로드 시작 시 필터링된 데이터 초기화
+      setDisplayData([]);    // 화면 표시 데이터도 초기화
       try {
         // Promise.all을 사용하여 두 데이터를 병렬로 가져올 수 있습니다.
         const [sectionsData, allHsData] = await Promise.all([
@@ -53,9 +55,8 @@ export default function HSSearchSidebar() {
           getHSData()
         ]);
         setSections(sectionsData);
-        setHsData(allHsData);
-        // 초기 필터링 데이터는 전체 HS 데이터로 설정
-        // setFilteredHsData(allHsData); // 이 부분은 selectedSection과 searchTerm에 따라 아래 useEffect에서 처리
+        setHsData(allHsData); // 원본 데이터 저장
+        // 초기에는 filteredHsData를 설정하지 않음. 사용자가 검색하거나 섹션을 선택할 때 업데이트
       } catch (err) {
         console.error("Failed to load HS data:", err);
         setError(err instanceof Error ? err.message : 'An unknown error occurred');
@@ -67,30 +68,31 @@ export default function HSSearchSidebar() {
 
   // selectedSection 또는 searchTerm이 변경될 때 필터링된 데이터 업데이트
   useEffect(() => {
-    let currentData = hsData;
-
-    // 1. 섹션 필터링
-    if (selectedSection && hsData.length > 0) {
-      currentData = hsData.filter(item => item.section === selectedSection);
+    // 검색어나 선택된 섹션이 있을 때만 필터링 수행
+    if (searchTerm || selectedSection) {
+      let currentData = hsData;
+      if (selectedSection && hsData.length > 0) {
+        currentData = hsData.filter(item => item.section === selectedSection);
+      }
+      if (searchTerm) {
+        const lowerCaseQuery = searchTerm.toLowerCase();
+        currentData = currentData.filter(item => {
+          const hsCodeMatches = item.hscode.replace(/\./g, '').startsWith(lowerCaseQuery.replace(/[\.\s]/g, ''));
+          const descriptionMatches = item.description.toLowerCase().includes(lowerCaseQuery);
+          // 만약 searchTerm이 숫자와 점으로만 이루어져 있다면 HS 코드 검색에 더 큰 비중을 둡니다.
+          if (/^[\d\.]+$/.test(lowerCaseQuery)) {
+            return hsCodeMatches || descriptionMatches; // HS코드 우선, 없으면 설명
+          } else if (selectedTariffKeyword && searchTerm === selectedTariffKeyword) {
+             // 다이어그램에서 온 키워드면 설명에서 더 넓게 검색 (또는 특별한 로직)
+             return descriptionMatches || item.hscode.includes(lowerCaseQuery.split(' ')[0]); // 예: 키워드의 첫 단어가 코드에 포함되는지
+          }
+          return descriptionMatches || hsCodeMatches; // 설명 또는 코드 매치
+        });
+      }
+      setFilteredHsData(currentData);
+    } else {
+      setFilteredHsData([]); // 검색어와 선택된 섹션이 모두 없으면 필터된 데이터 비움
     }
-
-    // 2. 검색어 필터링
-    if (searchTerm) {
-      const lowerCaseQuery = searchTerm.toLowerCase();
-      currentData = currentData.filter(item => {
-        const hsCodeMatches = item.hscode.replace(/\./g, '').startsWith(lowerCaseQuery.replace(/[\.\s]/g, ''));
-        const descriptionMatches = item.description.toLowerCase().includes(lowerCaseQuery);
-        // 만약 searchTerm이 숫자와 점으로만 이루어져 있다면 HS 코드 검색에 더 큰 비중을 둡니다.
-        if (/^[\d\.]+$/.test(lowerCaseQuery)) {
-          return hsCodeMatches || descriptionMatches; // HS코드 우선, 없으면 설명
-        } else if (selectedTariffKeyword && searchTerm === selectedTariffKeyword) {
-           // 다이어그램에서 온 키워드면 설명에서 더 넓게 검색 (또는 특별한 로직)
-           return descriptionMatches || item.hscode.includes(lowerCaseQuery.split(' ')[0]); // 예: 키워드의 첫 단어가 코드에 포함되는지
-        }
-        return descriptionMatches || hsCodeMatches; // 설명 또는 코드 매치
-      });
-    }
-    setFilteredHsData(currentData);
   }, [searchTerm, selectedSection, hsData, selectedTariffKeyword]);
 
   useEffect(() => {
@@ -113,8 +115,8 @@ export default function HSSearchSidebar() {
         const barWidth = (chartData.count / chartData.total) * canvasWidth;
         
         // Tailwind CSS의 테마 색상을 사용하거나, CSS 변수를 안전하게 가져옵니다.
-        const accentColor = '#007acc'; // 기본값 또는 Tailwind 설정에서 가져오도록 수정 가능
-        const fgColor = '#d4d4d4'; // 기본값 또는 Tailwind 설정에서 가져오도록 수정 가능
+        const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--tw-color-blue-500') || '#3b82f6'; // Tailwind blue-500
+        const fgColor = getComputedStyle(document.documentElement).getPropertyValue('--foreground') || '#e0e0e0';
 
         ctx.fillStyle = accentColor;
         ctx.fillRect(0, 0, barWidth, canvasHeight - 15); 
@@ -128,27 +130,32 @@ export default function HSSearchSidebar() {
 
   const tableHeaders = ['HS Code', 'Description', 'Section', 'Level'];
 
+  // Tailwind CSS를 사용한 스타일링 추가
+  const asideClasses = "sidebar p-4 border-gray-300 dark:border-gray-700"; // 기본 패딩 및 보더 색상 (globals.css와 연계)
+  const inputClasses = "w-full p-2 mb-4 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400";
+  const selectClasses = "w-full p-2 mb-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600"; // select도 mb-4로 통일하거나 필요에 따라 조정
+  const tableContainerClasses = "hs-table-container overflow-auto"; // globals.css의 max-height와 함께 사용
+  const tableClasses = "hs-table w-full text-sm text-left text-gray-500 dark:text-gray-400";
+  const thClasses = "px-4 py-2 text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400";
+  const tdClasses = "px-4 py-2 border-b border-gray-200 dark:border-gray-700";
+  const messageClasses = "text-center p-4 text-gray-500 dark:text-gray-400";
+
   if (isLoading) {
-    return <aside className="sidebar" id="sidebar-left"><p>Loading data...</p></aside>;
+    return <aside className={`${asideClasses} md:border-r`} id="sidebar-left"><p className={messageClasses}>Loading data...</p></aside>;
   }
 
   if (error) {
-    return <aside className="sidebar" id="sidebar-left"><p>Error loading data: {error}</p></aside>;
+    return <aside className={`${asideClasses} md:border-r`} id="sidebar-left"><p className={messageClasses}>Error loading data: {error}</p></aside>;
   }
 
   return (
-    <aside className="sidebar" id="sidebar-left">
-      <h2>HS Sections + Search</h2>
-      <div className="filters-container" style={{ marginBottom: '1rem' }}>
+    <aside className={`${asideClasses} md:border-r`} id="sidebar-left">
+      <h2 className="text-xl font-semibold mb-4">HS Sections + Search</h2>
+      <div className="filters-container mb-4">
         <select 
           value={selectedSection} 
-          onChange={(e) => {
-            setSelectedSection(e.target.value);
-            // 섹션 변경 시 검색어 초기화 또는 유지 정책 결정 가능
-            // if (selectedTariffKeyword && e.target.value === '') setSearchTerm(''); // 예: 전체 섹션 시 검색어 초기화
-          }}
-          className="hs-section-select"
-          style={{ marginRight: '0.5rem', padding: '0.5rem', borderRadius: '4px' }}
+          onChange={(e) => setSelectedSection(e.target.value)}
+          className={selectClasses}
         >
           <option value="">All Sections</option>
           {sections.map(sec => (
@@ -159,60 +166,59 @@ export default function HSSearchSidebar() {
         </select>
         <input 
           type="text" 
-          placeholder="Search HS Code or Description..." // 플레이스홀더 업데이트
+          placeholder="Search HS Code or Description..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="hs-search-input"
-          style={{ padding: '0.5rem', borderRadius: '4px' }}
+          className={inputClasses}
         />
       </div>
       
-      <div className="hs-table-container">
-        <table className="hs-table">
-          <thead>
+      <div className={tableContainerClasses}>
+        <table className={tableClasses}>
+          <thead className="sticky top-0 bg-gray-50 dark:bg-gray-700 z-10"> {/* 테이블 헤더 고정 */} 
             <tr>
               {tableHeaders.map((header, index) => (
-                <th key={index}>{header}</th>
+                <th key={index} className={thClasses}>{header}</th>
               ))}
             </tr>
           </thead>
           <tbody>
+            {(!searchTerm && !selectedSection && hsData.length > 0) && (
+              <tr>
+                <td colSpan={tableHeaders.length} className={messageClasses}>
+                  Please enter a search term or select a section to see HS codes.
+                </td>
+              </tr>
+            )}
+            {(searchTerm || selectedSection) && displayData.length === 0 && !isLoading && (
+              <tr>
+                <td colSpan={tableHeaders.length} className={messageClasses}>
+                  {`No results found for "${searchTerm}" ${selectedSection ? `in section ${selectedSection}` : ''}.`}
+                </td>
+              </tr>
+            )}
             {displayData.map((item, rowIndex) => (
-              <tr key={`${item.hscode}-${item.section}-${rowIndex}`}> 
-                <td>{item.hscode}</td>
-                <td dangerouslySetInnerHTML={{
+              <tr key={`${item.hscode}-${item.section}-${rowIndex}`} className="hover:bg-gray-50 dark:hover:bg-gray-600">
+                <td className={tdClasses}>{item.hscode}</td>
+                <td className={tdClasses} dangerouslySetInnerHTML={{
                   __html: searchTerm ? 
-                  item.description.replace(new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'), '<mark>$1</mark>') : 
+                  item.description.replace(new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'), '<mark class="bg-yellow-200 dark:bg-yellow-600 rounded">$1</mark>') :
                   item.description
                 }}></td>
-                <td>{item.section}</td>
-                <td>{item.level}</td>
+                <td className={tdClasses}>{item.section}</td>
+                <td className={tdClasses}>{item.level}</td>
               </tr>
             ))}
             {filteredHsData.length > MAX_TABLE_ROWS && (
               <tr>
-                <td colSpan={tableHeaders.length} style={{ textAlign: 'center', fontStyle: 'italic' }}>
+                <td colSpan={tableHeaders.length} className={`${messageClasses} italic`}>
                   {`Showing ${MAX_TABLE_ROWS} of ${filteredHsData.length} results. Refine your search.`}
                 </td>
               </tr>
             )}
-            {displayData.length === 0 && (searchTerm || selectedSection) && (
-                 <tr>
-                    <td colSpan={tableHeaders.length} style={{ textAlign: 'center' }}>
-                        {`No results found for "${searchTerm}" ${selectedSection ? `in section ${selectedSection}` : ''}.`}
-                    </td>
-                </tr>
-            )}
-             {displayData.length === 0 && !searchTerm && !selectedSection && hsData.length > 0 && (
-                 <tr>
-                    <td colSpan={tableHeaders.length} style={{ textAlign: 'center' }}>
-                        No data to display. Try a search or select a section.
-                    </td>
-                </tr>
-            )}
             {hsData.length === 0 && !isLoading && (
                  <tr>
-                    <td colSpan={tableHeaders.length} style={{ textAlign: 'center' }}>
+                    <td colSpan={tableHeaders.length} className={messageClasses}>
                         HS Code data is not available.
                     </td>
                 </tr>
@@ -220,7 +226,7 @@ export default function HSSearchSidebar() {
           </tbody>
         </table>
       </div>
-      <canvas id="hs-chart-canvas" className="hs-chart" width="200" height="50"></canvas>
+      <canvas id="hs-chart-canvas" className="hs-chart w-full h-12 mt-4" width="200" height="50"></canvas> {/* Tailwind w-full, h-12 적용 */}
     </aside>
   );
 } 
