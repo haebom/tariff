@@ -1633,7 +1633,7 @@ interface DetailedNodeInfo {
   description?: string;
   details?: {
     label: string;
-    value: string;
+    value: any; // string 대신 any로 변경하여 객체도 허용
   }[];
   relatedLinks?: {
     label: string;
@@ -1775,10 +1775,11 @@ export default function TariffDiagram() {
           // Convert top-level properties to details
           if (typeof data === 'object') {
             Object.entries(data).forEach(([key, value]) => {
-              if (typeof value !== 'object' && value !== undefined) {
+              // 중첩된 객체인 경우에도 적절하게 처리
+              if (value !== undefined) {
                 detailedInfo?.details?.push({
                   label: key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-                  value: String(value)
+                  value: value
                 });
               }
             });
@@ -1924,8 +1925,15 @@ export default function TariffDiagram() {
                 <span style={{ 
                   fontSize: '14px', 
                   color: '#333',
-                  wordBreak: 'break-word'
-                }}>{detail.value}</span>
+                  wordBreak: 'break-word',
+                  whiteSpace: typeof detail.value === 'object' && detail.value !== null ? 'pre-wrap' : 'normal',
+                  fontFamily: typeof detail.value === 'object' && detail.value !== null ? 'monospace' : 'inherit'
+                }}>{
+                  // 객체인 경우 JSON.stringify로 변환
+                  typeof detail.value === 'object' && detail.value !== null
+                    ? JSON.stringify(detail.value, null, 2)
+                    : detail.value
+                }</span>
               </div>
             ))}
           </div>
