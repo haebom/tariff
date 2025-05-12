@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { SharedStateProvider } from "@/context/AppContext"; // Import from context path
+import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Tariff Information", // Example title
-  description: "Interactive tariff information and news",
+  title: "Trump 2025 Tariff Policy",
+  description: "Interactive visualization of Trump's 2025 tariff policy",
 };
 
 export default function RootLayout({
@@ -27,6 +28,8 @@ export default function RootLayout({
         <SharedStateProvider>
           {children}
         </SharedStateProvider>
+        
+        <Analytics />
         
         {/* GitHub Repository Link */}
         <a 
