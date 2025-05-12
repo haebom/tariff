@@ -1633,7 +1633,8 @@ interface DetailedNodeInfo {
   description?: string;
   details?: {
     label: string;
-    value: any; // string 대신 any로 변경하여 객체도 허용
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    value: any;
   }[];
   relatedLinks?: {
     label: string;

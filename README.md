@@ -106,5 +106,3 @@ This project is distributed under the Apache 2.0 License. See the `LICENSE` file
 
 Project Manager: haebom@kakao.com
 You can also report bugs or request features through [GitHub Issues](https://github.com/haebom/tariff/issues).
-
-        

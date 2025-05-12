@@ -1,4 +1,4 @@
-// File: /Users/haebom/myenv/haebomcode/tariff/src/app/api/rss/route.ts
+// File: /Users/haebom/tariff/src/app/api/rss/route.ts
 import * as entry from '../../../../../src/app/api/rss/route.js'
 import type { NextRequest } from 'next/server.js'
 
