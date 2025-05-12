@@ -17,7 +17,7 @@ export default function HSSearchSidebar() {
   const [error, setError] = useState<string | null>(null);
   const [displayData, setDisplayData] = useState<HSData[]>([]);
   const [chartData, setChartData] = useState({ count: 0, total: 0 });
-  const { setSelectedTariffKeyword } = useSharedState();
+  const { selectedTariffKeyword } = useSharedState();
 
   // sections 변수 사용 (임시 - 추후 UI에 실제 사용)
   // useEffect(() => {

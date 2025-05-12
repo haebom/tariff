@@ -1,16 +1,11 @@
 'use client';
 
-import React, { useCallback, useState, useEffect } from 'react';
-import ReactFlow, {
-  addEdge,
-  MiniMap,
-  Controls,
-  Background,
+import React, { useState, useEffect } from 'react';
+import {
   useNodesState,
   useEdgesState,
   Node,
   Edge,
-  Connection,
   MarkerType,
   Position
 } from 'reactflow';
@@ -19,8 +14,6 @@ import { useSharedState } from '@/context/AppContext';
 import dagre from 'dagre';
 import tariffPolicyDataJson from '@/data/tariffPolicyEn.json';
 const tariffPolicyData: TariffPolicy = tariffPolicyDataJson;
-
-const INITIAL_PRICE_DISPLAY = '$100.00 📦 (Select a tariff scenario)';
 
 // View types for filtering
 type ViewType = 'policy' | 'country' | 'item';
@@ -442,19 +435,6 @@ const initialEdges: Edge[] = [
   { id: 'e-other-q2-a2no', source: 'other-q2', target: 'other-a2-no', label: 'NO', type: 'smoothstep', markerEnd: { type: MarkerType.ArrowClosed } },
   { id: 'e-other-q2-a2yes', source: 'other-q2', target: 'other-a2-yes', label: 'YES', type: 'smoothstep', markerEnd: { type: MarkerType.ArrowClosed } },
 ];
-
-const nodeColor = (node: Node) => {
-  switch (node.type) {
-    case 'input':
-      return '#0041d0';
-    case 'output': // 청록색 노드
-      return node.data.label.includes('Tariff') && (node.data.label.includes('%') || node.data.label.includes('Fentanyl')) && !node.data.label.includes('No Tariffs') ? '#5D70B4' : '#82D0D4';
-    default:
-      return '#E2E2E2'; // Default node color (e.g., for questions)
-  }
-};
-
-const HIGHLIGHT_COLOR = '#ff0072'; // Color for highlighted elements
 
 const dagreGraph = new dagre.graphlib.Graph();
 dagreGraph.setDefaultEdgeLabel(() => ({}));
@@ -1643,17 +1623,12 @@ interface DetailedNodeInfo {
 
 export default function TariffDiagram() {
   const [viewType, setViewType] = useState<ViewType>('policy');
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [, setNodes] = useNodesState([]);
+  const [, setEdges] = useEdgesState([]);
   const { setSelectedTariffKeyword } = useSharedState();
 
-  // const [highlightedNodeIds, setHighlightedNodeIds] = useState<string[]>([]);
-  // const [highlightedEdgeIds, setHighlightedEdgeIds] = useState<string[]>([]);
-  const [priceDisplay, setPriceDisplay] = useState<string>(INITIAL_PRICE_DISPLAY);
-  
-  // New state for detailed info panel
+  // Remove unused state variables
   const [selectedNodeInfo, setSelectedNodeInfo] = useState<DetailedNodeInfo | null>(null);
-  const [showDetailPanel, setShowDetailPanel] = useState<boolean>(false);
 
   // Load tariff policy data
   useEffect(() => {
@@ -1689,46 +1664,15 @@ export default function TariffDiagram() {
     }
     
     // Reset any selections when changing view
-    // setHighlightedNodeIds([]); // 주석 처리된 상태의 setter 호출도 주석 처리
-    // setHighlightedEdgeIds([]); // 주석 처리된 상태의 setter 호출도 주석 처리
     setSelectedTariffKeyword(null);
-    setPriceDisplay(INITIAL_PRICE_DISPLAY);
     setSelectedNodeInfo(null);
-    setShowDetailPanel(false);
     
   }, [viewType, setNodes, setEdges, setSelectedTariffKeyword]);
-
-  const resetHighlights = useCallback(() => {
-    // setHighlightedNodeIds([]); // 주석 처리된 상태의 setter 호출도 주석 처리
-    // setHighlightedEdgeIds([]); // 주석 처리된 상태의 setter 호출도 주석 처리
-    setSelectedTariffKeyword(null);
-    setPriceDisplay(INITIAL_PRICE_DISPLAY);
-    setSelectedNodeInfo(null);
-    setShowDetailPanel(false);
-    setNodes((nds) =>
-      nds.map((n) => ({
-        ...n,
-        style: { ...(initialNodes.find(inN => inN.id === n.id)?.style || {}), ...n.style, stroke: undefined },
-      }))
-    );
-    setEdges((eds) =>
-      eds.map((e) => ({
-        ...e,
-        style: { ...(initialEdges.find(inE => inE.id === e.id)?.style || {}), stroke: undefined },
-        animated: false,
-      }))
-    );
-  }, [setSelectedTariffKeyword, setNodes, setEdges]);
-
-  const onConnect = useCallback(
-    (params: Edge | Connection) => setEdges((eds) => addEdge({ ...params, type: 'smoothstep', markerEnd: { type: MarkerType.ArrowClosed } }, eds)),
-    [setEdges],
-  );
 
   const getDetailedNodeInfo = (node: Node): DetailedNodeInfo | null => {
     if (!node.data) return null;
 
-    let detailedInfo: DetailedNodeInfo = {
+    const detailedInfo: DetailedNodeInfo = {
       title: node.data.label,
       details: []
     };
@@ -1778,65 +1722,6 @@ export default function TariffDiagram() {
     return detailedInfo;
   };
 
-  const onNodeClick = useCallback(
-    (event: React.MouseEvent, node: Node) => {
-      // Reset all node styles first
-      setNodes((nds) =>
-        nds.map((n) => ({
-          ...n,
-          style: {
-            ...n.style,
-            borderColor: undefined,
-            borderWidth: undefined,
-          },
-        }))
-      );
-
-      // Reset all edge styles
-      setEdges((eds) =>
-        eds.map((e) => ({
-          ...e,
-          style: {
-            ...e.style,
-            stroke: undefined,
-            strokeWidth: undefined,
-          },
-        }))
-      );
-
-      // Get detailed information for the clicked node
-      const detailedInfo = getDetailedNodeInfo(node);
-      if (detailedInfo) {
-        setSelectedNodeInfo(detailedInfo);
-        setShowDetailPanel(true);
-      }
-      
-      // Apply new highlight
-      if (node.data && node.data.keyword) {
-        const keyword = node.data.keyword;
-        setSelectedTariffKeyword(keyword);
-        
-        // Highlight the current node
-        setNodes((nds) =>
-          nds.map((n) => {
-            if (n.id === node.id) {
-              return {
-                ...n,
-                style: {
-                  ...n.style,
-                  borderColor: HIGHLIGHT_COLOR,
-                  borderWidth: 2,
-                },
-              };
-            }
-            return n;
-          })
-        );
-      }
-    },
-    [setSelectedTariffKeyword, setNodes, setEdges, setSelectedNodeInfo, setShowDetailPanel]
-  );
-
   // Detail panel component - replace the existing DetailPanel with this improved version
   const DetailPanel = () => {
     if (!selectedNodeInfo) return null;
@@ -1871,7 +1756,7 @@ export default function TariffDiagram() {
             fontWeight: 'bold'
           }}>{selectedNodeInfo.title}</h3>
           <button 
-            onClick={() => setShowDetailPanel(false)}
+            onClick={() => setSelectedNodeInfo(null)}
             style={{ 
               background: 'none', 
               border: 'none', 
@@ -1971,18 +1856,7 @@ export default function TariffDiagram() {
 
   // Replace React Flow with static SVG
   const StaticDiagram = ({ viewType }: { viewType: ViewType }) => {
-    const [selectedNode, setSelectedNode] = useState<string | null>(null);
-    const [showDetailPanel, setShowDetailPanel] = useState(false);
-    const [selectedNodeInfo, setSelectedNodeInfo] = useState<DetailedNodeInfo | null>(null);
-
-    const handleNodeClick = (nodeId: string, nodeData: any) => {
-      setSelectedNode(nodeId);
-      const info = getDetailedNodeInfo({ id: nodeId, data: nodeData } as Node);
-      if (info) {
-        setSelectedNodeInfo(info);
-        setShowDetailPanel(true);
-      }
-    };
+    const [selectedNodeInfo] = useState<DetailedNodeInfo | null>(null);
 
     const renderPolicyView = () => (
       <svg width="100%" height="600" viewBox="0 0 800 600">
@@ -2040,7 +1914,7 @@ export default function TariffDiagram() {
           {viewType === 'item' && renderItemView()}
         </div>
 
-        {showDetailPanel && selectedNodeInfo && (
+        {selectedNodeInfo && (
           <DetailPanel />
         )}
       </div>
