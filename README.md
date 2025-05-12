@@ -6,13 +6,15 @@ This project is a web application that visualizes tariff information for hardwar
 
 ## Why This Project Exists
 
-This project was created after observing my wife working in international trade struggling to track and explain the constantly changing tariff news and regulations. Additionally, we noticed some people were misinterpreting or spreading inaccurate information about tariffs for various purposes. This project aims to provide people with accurate information about tariff rates.
+This project was created after observing international trade professionals struggling to track and explain the constantly changing tariff news and regulations. Additionally, we noticed some people were misinterpreting or spreading inaccurate information about tariffs for various purposes. This project aims to provide people with accurate information about tariff rates.
 
 ## Key Features
 - **HS Code Search**: Search for Harmonized System codes and descriptions to find product information
 - **Tariff Rate Diagrams**: Visual diagrams showing tariff rates by origin (China, Canada/Mexico, other regions)
 - **News Feed**: Latest tariff-related news provided via RSS feed with keyword filtering
 - **Interactive UI**: Automatic news filtering based on selected items in the diagram
+- **OR Search Support**: Enhanced news filtering with OR operators for more relevant results
+- **Latest Tariff Updates**: Including the June 2025 US-China 90-day tariff reduction agreement
 
 ## Technology Stack
 - **Framework**: [Next.js](https://nextjs.org/) (React-based full-stack framework)
@@ -25,7 +27,7 @@ This project was created after observing my wife working in international trade 
 
 ## Live Demo
 
-Visit our [GitHub Pages site](https://yourusername.github.io/tariff) to use the application directly.
+Visit our [live demo site](https://tariff-cyan.vercel.app/) to use the application directly.
 
 ## Project Structure
 
@@ -36,6 +38,8 @@ tariff/
 │   └── Harmonized System Sections.csv  # HS section data
 ├── src/
 │   ├── app/                 # Next.js app router
+│   │   └── api/             # API routes
+│   │       └── rss/         # RSS feed proxy API
 │   ├── components/          # React components
 │   │   ├── NewsFeed.tsx     # News feed component
 │   │   └── TariffDiagram.tsx # Tariff rate diagram component
@@ -50,7 +54,8 @@ tariff/
 
 - **HS Code Data**: `public/Harmonized System Data.csv`
 - **HS Section Data**: `public/Harmonized System Sections.csv`
-- **News Data**: External RSS feeds (fetched via API routes)
+- **News Data**: External RSS feeds (fetched via API routes from Google News)
+- **Tariff Policy Data**: JSON data structure representing current tariff policies
 
 ## Contributing
 
@@ -99,7 +104,7 @@ This project is distributed under the Apache 2.0 License. See the `LICENSE` file
 
 ## Contact
 
-Project Manager: haebom@kakao.com[(mailto:haebom@kakao.com)]
-You can also report bugs or request features through GitHub Issues.
+Project Manager: haebom@kakao.com
+You can also report bugs or request features through [GitHub Issues](https://github.com/haebom/tariff/issues).
 
         

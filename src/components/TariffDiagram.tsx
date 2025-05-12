@@ -376,11 +376,11 @@ const initialNodes: Node[] = [
   // China Path
   { id: 'china-q1', type: 'default', data: { label: 'April 11th Exemption?' }, position: { x: 0, y: 0 }, style: { width: 120, textAlign: 'center' } },
   { id: 'china-a1-no', type: 'output', data: { label: '145% Tariff', keyword: 'China 145% Tariff' }, position: { x: 0, y: 0 }, style: { background: '#5D70B4', color: 'white', width: 120, textAlign: 'center' } },
-  // 뉴스 반영: 90일간 임시 관세 인하 노드 추가 (미국→중국)
-  { id: 'china-a1-temp-us', type: 'output', data: { label: '30% Tariff (90 days, US→China)', keyword: 'US to China 30% Tariff 90 days', details: { description: '미국과 중국이 2025년 6월, 90일간 상호 관세를 대폭 인하하기로 합의. 미국은 중국산 수입품에 대한 관세를 145%에서 30%로 90일간 인하.' } }, position: { x: 0, y: 0 }, style: { background: '#FFD700', color: 'black', width: 180, textAlign: 'center', border: '2px dashed #5D70B4' } },
+  // News update: 90-day temporary tariff reduction node added (US→China)
+  { id: 'china-a1-temp-us', type: 'output', data: { label: '30% Tariff (90 days, US→China)', keyword: 'US to China 30% Tariff 90 days', details: { description: 'US and China agreed in June 2025 to significantly reduce tariffs for 90 days. The US reduced tariffs on Chinese imports from 145% to 30% for a 90-day period.' } }, position: { x: 0, y: 0 }, style: { background: '#FFD700', color: 'black', width: 180, textAlign: 'center', border: '2px dashed #5D70B4' } },
   { id: 'china-a1-yes', type: 'output', data: { label: '20% Fentanyl Tariff', keyword: 'China Fentanyl Tariff' }, position: { x: 0, y: 0 }, style: { background: '#82D0D4', color: 'black', width: 120, textAlign: 'center' } },
-  // 뉴스 반영: 90일간 임시 관세 인하 노드 추가 (중국→미국)
-  { id: 'china-a1-temp-cn', type: 'output', data: { label: '10% Tariff (90 days, China→US)', keyword: 'China to US 10% Tariff 90 days', details: { description: '중국도 미국산 수입품에 대한 관세를 125%에서 10%로 90일간 인하.' } }, position: { x: 0, y: 0 }, style: { background: '#FFD700', color: 'black', width: 180, textAlign: 'center', border: '2px dashed #5D70B4' } },
+  // News update: 90-day temporary tariff reduction node added (China→US)
+  { id: 'china-a1-temp-cn', type: 'output', data: { label: '10% Tariff (90 days, China→US)', keyword: 'China to US 10% Tariff 90 days', details: { description: 'China also reduced tariffs on US imports from 125% to 10% for a 90-day period.' } }, position: { x: 0, y: 0 }, style: { background: '#FFD700', color: 'black', width: 180, textAlign: 'center', border: '2px dashed #5D70B4' } },
   { id: 'china-q2', type: 'default', data: { label: '>20% of Content from US?' }, position: { x: 0, y: 0 }, style: { width: 150, textAlign: 'center' } },
   { id: 'china-a2-no', type: 'output', data: { label: '145% Tariff on Full Customs Value', keyword: 'China 145% Full Value' }, position: { x: 0, y: 0 }, style: { background: '#82D0D4', color: 'black', width: 160, textAlign: 'center' } },
   { id: 'china-a2-yes', type: 'output', data: { label: 'US Content Is Tariff Free; Non-US Content Tariffed at 145%', keyword: 'China 145% US Content Free' }, position: { x: 0, y: 0 }, style: { background: '#82D0D4', color: 'black', width: 160, textAlign: 'center' } },
@@ -1991,7 +1991,7 @@ export default function TariffDiagram() {
           fitView
           attributionPosition="bottom-left"
           nodesDraggable={true}
-          panOnDrag={false} // 이 줄을 추가합니다.
+          panOnDrag={false} // Disable panning when dragging
           style={{ background: '#fcfcfc' }}
         >
           <MiniMap 

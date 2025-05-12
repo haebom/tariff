@@ -1,7 +1,17 @@
 import { NextResponse } from 'next/server';
 
-export async function GET() {
-  const targetUrl = 'https://news.google.com/rss/search?q=tariff';
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const searchQuery = url.searchParams.get('q') || 'tariff';
+  
+  // Support OR search by replacing spaces with OR operator
+  const formattedQuery = searchQuery.includes(' OR ') 
+    ? searchQuery  // Already has OR operator
+    : searchQuery.replace(/\s+/g, ' OR ');  // Replace spaces with OR
+    
+  // Use the formatted query for Google News search
+  const targetUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(formattedQuery)}`;
+  
   console.log(`Fetching RSS from: ${targetUrl}`);
 
   try {

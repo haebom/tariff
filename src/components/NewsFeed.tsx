@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { XMLParser } from 'fast-xml-parser';
-import { useSharedState } from '@/context/AppContext'; // 공유 컨텍스트 import
+import { useSharedState } from '@/context/AppContext'; // Import shared context
 import Image from 'next/image';
 
 interface NewsItem {
@@ -11,7 +11,7 @@ interface NewsItem {
   pubDate?: string;
   description?: string;
   source?: string;
-  imageUrl?: string; // 썸네일 이미지 URL 추가
+  imageUrl?: string; // Thumbnail image URL
 }
 
 // Type definitions for parsed XML items
@@ -63,31 +63,29 @@ export default function NewsFeed() {
   const [filterKeywords, setFilterKeywords] = useState<string[]>([]);
   const [rawFilterTerm, setRawFilterTerm] = useState('');
 
-  const { selectedTariffKeyword } = useSharedState(); // 공유 상태 가져오기
+  const { selectedTariffKeyword } = useSharedState(); // Get shared state
 
-  // 다이어그램에서 선택된 키워드가 변경되면 filterKeywords 와 rawFilterTerm 업데이트
+  // Update filterKeywords and rawFilterTerm when selected keyword changes in diagram
   useEffect(() => {
     if (selectedTariffKeyword) {
-      setRawFilterTerm(selectedTariffKeyword); // 검색창에는 원본 또는 가공된 키워드 표시
-      // 키워드 분리 로직 (개선 가능)
+      setRawFilterTerm(selectedTariffKeyword); // Show original or processed keyword in search box
+      // Keyword separation logic (can be improved)
       const keywords = selectedTariffKeyword
         .toLowerCase()
-        // 공백, 쉼표, 세미콜론, 마침표, % 등을 기준으로 분리하고, 길이가 1보다 큰 유효한 단어만 필터링
-        .split(/[\\s,;%\\.\\-\\(\\)]+/) 
-        .filter(kw => kw && kw.length > 1 && !/^\\d+$/.test(kw) && kw !== 'tariff' && kw !== 'and' && kw !== 'the' && kw !== 'for' && kw !== 'is' && kw !== 'of');
+        // Split by spaces, commas, semicolons, periods, %, etc., and filter valid words with length > 1
+        .split(/[\s,;%\.\-\(\)]+/) 
+        .filter(kw => kw && kw.length > 1 && !/^\d+$/.test(kw) && kw !== 'tariff' && kw !== 'and' && kw !== 'the' && kw !== 'for' && kw !== 'is' && kw !== 'of');
       
-      // 분리된 키워드가 있으면 사용, 없으면 원본 키워드를 소문자로 변환하여 배열에 넣음 (null 체크 추가)
+      // Use separated keywords if available, otherwise use original keyword in lowercase
       setFilterKeywords(keywords.length > 0 ? keywords : (selectedTariffKeyword ? [selectedTariffKeyword.toLowerCase()] : []));
     } else {
-      // selectedTariffKeyword가 null일 때 (예: 다이어그램 선택 해제)
-      // 사용자가 검색창에 직접 입력한 내용이 없다면 모든 필터 키워드 초기화
-      // rawFilterTerm은 사용자가 검색창에 남겨둔 값일 수 있으므로 여기서는 초기화하지 않음.
-      // 필요하다면 setRawFilterTerm(''); 추가 가능
+      // When selectedTariffKeyword is null (e.g., diagram selection cleared)
+      // If user has not directly entered anything in search box, reset all filter keywords
       if (rawFilterTerm.trim() === '') {
          setFilterKeywords([]);
       }
     }
-  }, [selectedTariffKeyword, rawFilterTerm]); // rawFilterTerm 의존성 추가
+  }, [selectedTariffKeyword, rawFilterTerm]); // Added rawFilterTerm dependency
 
   useEffect(() => {
     async function fetchNews() {
@@ -225,42 +223,44 @@ export default function NewsFeed() {
 
   const handleTextInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value;
-    setRawFilterTerm(term); // 사용자가 입력한 값으로 rawFilterTerm 업데이트
+    setRawFilterTerm(term); // Update rawFilterTerm with user input
 
     if (term.trim() === '') {
-      // 입력이 비었을 때, 다이어그램 선택 키워드도 없다면 필터 키워드 비움
+      // When input is empty and no diagram keyword, clear filter keywords
       if (!selectedTariffKeyword) {
         setFilterKeywords([]);
       } else {
-        // 다이어그램 키워드가 있다면 그것으로 다시 필터링 (위 useEffect 로직과 유사하게)
+        // If diagram keyword exists, filter using it (similar to above useEffect logic)
         const keywords = selectedTariffKeyword
           .toLowerCase()
-          .split(/[\\s,;%\\.\\-\\(\\)]+/)
-          .filter(kw => kw && kw.length > 1 && !/^\\d+$/.test(kw) && kw !== 'tariff' && kw !== 'and' && kw !== 'the' && kw !== 'for' && kw !== 'is' && kw !== 'of');
+          .split(/[\s,;%\.\-\(\)]+/)
+          .filter(kw => kw && kw.length > 1 && !/^\d+$/.test(kw) && kw !== 'tariff' && kw !== 'and' && kw !== 'the' && kw !== 'for' && kw !== 'is' && kw !== 'of');
         setFilterKeywords(keywords.length > 0 ? keywords : (selectedTariffKeyword ? [selectedTariffKeyword.toLowerCase()] : []));
       }
     } else {
-      // 사용자가 직접 입력한 경우, 입력된 term을 소문자로 분리하여 키워드로 사용
-       const keywords = term
+      // For user direct input, split term to lowercase and use as keywords
+      const keywords = term
         .toLowerCase()
-        .split(/[\\s,;%\\.\\-\\(\\)]+/)
-        .filter(kw => kw && kw.length > 0); // 직접 입력 시에는 좀 더 관대한 필터링
+        .split(/[\s,;%\.\-\(\)]+/)
+        .filter(kw => kw && kw.length > 0); // More permissive filtering for direct input
       setFilterKeywords(keywords.length > 0 ? keywords : []);
     }
   };
 
   const filteredNewsItems = newsItems.filter(item => {
-    // 필터 키워드가 없으면 (그리고 rawFilterTerm도 비어있다면) 모든 아이템을 보여주는 것이 자연스러움
+    // If no filter keywords (and rawFilterTerm is empty), show all items
     if (filterKeywords.length === 0) {
       return true; 
     }
 
-    // filterKeywords 배열의 키워드 중 하나라도 제목이나 설명에 포함되면 true (OR 조건)
+    // Improved OR search logic - match any keyword in title or description
     return filterKeywords.some(keyword => {
-      if (!keyword) return false; // 빈 키워드 방지
+      if (!keyword) return false; // Prevent empty keyword
       const lowerKeyword = keyword.toLowerCase();
-      return item.title.toLowerCase().includes(lowerKeyword) ||
-             (item.description && item.description.toLowerCase().includes(lowerKeyword));
+      const titleMatch = item.title.toLowerCase().includes(lowerKeyword);
+      const descriptionMatch = item.description && item.description.toLowerCase().includes(lowerKeyword);
+      
+      return titleMatch || descriptionMatch;
     });
   });
 
@@ -292,7 +292,7 @@ export default function NewsFeed() {
         onChange={handleTextInputChange}
         className={inputClasses}
       />
-      {/* 결과 없음 메시지 조건 수정 */}
+      {/* Modified "No results" message condition */}
       {filteredNewsItems.length === 0 && !isLoading && (filterKeywords.length > 0 || rawFilterTerm.trim() !== '') && 
         <p className={messageClasses}>
           No news items found matching your filter
@@ -300,7 +300,7 @@ export default function NewsFeed() {
           .
         </p>
       }
-      {/* 초기 로드 시 뉴스 자체가 없을 경우 (네트워크 오류 등이 아닌 빈 피드) */}
+      {/* For initially empty news feed (not due to network error but empty feed) */}
       {newsItems.length === 0 && !isLoading && !error && filterKeywords.length === 0 && rawFilterTerm.trim() === '' &&
         <p className={messageClasses}>News feed is currently empty or no initial filter applied.</p>
       }
