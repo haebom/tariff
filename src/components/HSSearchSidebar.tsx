@@ -231,8 +231,8 @@ export default function HSSearchSidebar() {
                 </td>
               </tr>
             )}
-            {displayData.map((item, rowIndex) => (
-              <tr key={`${item.hscode}-${item.section}-${rowIndex}`} className="hover:bg-gray-50 dark:hover:bg-gray-600">
+            {filterData().slice(0, MAX_TABLE_ROWS).map((item, index) => (
+              <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-600">
                 <td className={tdClasses}>{item.hscode}</td>
                 <td className={tdClasses} dangerouslySetInnerHTML={{
                   __html: searchTerm ? 
@@ -243,10 +243,10 @@ export default function HSSearchSidebar() {
                 <td className={tdClasses}>{item.level}</td>
               </tr>
             ))}
-            {filteredData.length > MAX_TABLE_ROWS && (
+            {filterData().length > MAX_TABLE_ROWS && (
               <tr>
                 <td colSpan={tableHeaders.length} className={`${messageClasses} italic`}>
-                  {`Showing ${MAX_TABLE_ROWS} of ${filteredData.length} results. Refine your search.`}
+                  {`Showing ${MAX_TABLE_ROWS} of ${filterData().length} results. Refine your search.`}
                 </td>
               </tr>
             )}
