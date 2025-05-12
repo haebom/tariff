@@ -1975,18 +1975,6 @@ export default function TariffDiagram() {
       <ViewTypeSelector viewType={viewType} setViewType={setViewType} />
       
       <div style={{ 
-        marginBottom: '15px', 
-        padding: '12px', 
-        border: '1px solid #e0e0e0', 
-        borderRadius: '8px', 
-        textAlign: 'center',
-        backgroundColor: '#f9f9f9',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-      }}>
-        <strong style={{ color: '#5D70B4' }}>Estimated Price:</strong> {priceDisplay}
-      </div>
-      
-      <div style={{ 
         height: '600px', 
         border: '1px solid #e0e0e0',
         borderRadius: '8px',
@@ -2025,7 +2013,8 @@ export default function TariffDiagram() {
       <div style={{ 
         marginTop: '15px', 
         display: 'flex', 
-        justifyContent: 'center'
+        justifyContent: 'space-between',
+        alignItems: 'center'
       }}>
         <button 
           onClick={resetHighlights} 
@@ -2045,6 +2034,15 @@ export default function TariffDiagram() {
         >
           Clear Selection / Reset Diagram
         </button>
+        
+        <div style={{ 
+          padding: '10px 15px', 
+          color: '#333',
+          fontSize: '14px',
+          fontWeight: 'bold'
+        }}>
+          <span style={{ color: '#5D70B4' }}>Estimated Price:</span> {priceDisplay}
+        </div>
       </div>
       
       {showDetailPanel && <DetailPanel />}
