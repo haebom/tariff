@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { XMLParser } from 'fast-xml-parser';
 import { useSharedState } from '@/context/AppContext'; // 공유 컨텍스트 import
+import Image from 'next/image';
 
 interface NewsItem {
   title: string;
@@ -10,6 +11,7 @@ interface NewsItem {
   pubDate?: string;
   description?: string;
   source?: string;
+  imageUrl?: string; // 썸네일 이미지 URL 추가
 }
 
 // Type definitions for parsed XML items
@@ -85,7 +87,7 @@ export default function NewsFeed() {
          setFilterKeywords([]);
       }
     }
-  }, [selectedTariffKeyword]); // rawFilterTerm 의존성 제거 또는 신중히 추가 고려
+  }, [selectedTariffKeyword, rawFilterTerm]); // rawFilterTerm 의존성 추가
 
   useEffect(() => {
     async function fetchNews() {
@@ -131,12 +133,25 @@ export default function NewsFeed() {
                 itemTitle = item.title['#text'];
               }
 
+              // 썸네일 이미지 추출
+              let imageUrl;
+              if (item['media:thumbnail'] && item['media:thumbnail']['@_url']) {
+                imageUrl = item['media:thumbnail']['@_url'];
+              } else if (item['media:content'] && item['media:content']['@_url']) {
+                imageUrl = item['media:content']['@_url'];
+              } else if (item.enclosure && item.enclosure['@_url']) {
+                imageUrl = item.enclosure['@_url'];
+              } else if (item.image && typeof item.image === 'string') {
+                imageUrl = item.image;
+              }
+
               return {
                 title: itemTitle,
                 link: itemLink,
                 pubDate: item.pubDate,
                 description: item.description,
-                source: result.rss.channel.title || 'Unknown Source'
+                source: result.rss.channel.title || 'Unknown Source',
+                imageUrl: imageUrl,
               };
             });
         } else if (result.feed && result.feed.entry) {
@@ -171,12 +186,25 @@ export default function NewsFeed() {
                 entryDescription = entry.content['#text'];
               }
 
+              // Atom 피드 썸네일 추출 (일부 Atom 피드에서 media:thumbnail, media:content, image 등 사용)
+              let imageUrl;
+              if (entry['media:thumbnail'] && entry['media:thumbnail']['@_url']) {
+                imageUrl = entry['media:thumbnail']['@_url'];
+              } else if (entry['media:content'] && entry['media:content']['@_url']) {
+                imageUrl = entry['media:content']['@_url'];
+              } else if (entry.enclosure && entry.enclosure['@_url']) {
+                imageUrl = entry.enclosure['@_url'];
+              } else if (entry.image && typeof entry.image === 'string') {
+                imageUrl = entry.image;
+              }
+
               return {
                 title: entryTitle,
                 link: atomLink,
                 pubDate: entry.updated || entry.published,
                 description: entryDescription,
-                source: result.feed.title || 'Unknown Source'
+                source: result.feed.title || 'Unknown Source',
+                imageUrl: imageUrl,
               };
             });
         } else {
@@ -278,15 +306,26 @@ export default function NewsFeed() {
       }
       <ul className={listClasses}>
         {filteredNewsItems.map((item, index) => (
-          <li key={`${item.link}-${item.title}-${index}`} className={listItemClasses}>
-            <a href={item.link} target="_blank" rel="noopener noreferrer" className={linkClasses}>
-              <h3 className={titleClasses}>{item.title}</h3>
-            </a>
-            {item.pubDate && <small className={smallTextClasses}>{new Date(item.pubDate).toLocaleDateString()}</small>}
-            {item.description && <p className={descriptionClasses} dangerouslySetInnerHTML={{ __html: item.description }}></p>}
-            {item.source && <small className={`${smallTextClasses} mt-1`}>Source: {item.source}</small>}\
+          <li key={`${item.link}-${item.title}-${index}`} className={listItemClasses + ' flex items-start'}>
+            {item.imageUrl && (
+              <Image
+                src={item.imageUrl}
+                alt={item.title}
+                width={80}
+                height={80}
+                className="w-20 h-20 object-cover rounded mr-3 flex-shrink-0"
+                unoptimized
+              />
+            )}
+            <div className="flex-1">
+              <a href={item.link} target="_blank" rel="noopener noreferrer" className={linkClasses}>
+                <h3 className={titleClasses}>{item.title}</h3>
+              </a>
+              {item.pubDate && <small className={smallTextClasses}>{new Date(item.pubDate).toLocaleDateString()}</small>}
+              {item.description && <p className={descriptionClasses} dangerouslySetInnerHTML={{ __html: item.description }}></p>}
+            </div>
           </li>
-        ))}\
+        ))}
       </ul>
     </div>
   );

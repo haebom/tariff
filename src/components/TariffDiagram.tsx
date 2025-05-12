@@ -376,7 +376,11 @@ const initialNodes: Node[] = [
   // China Path
   { id: 'china-q1', type: 'default', data: { label: 'April 11th Exemption?' }, position: { x: 0, y: 0 }, style: { width: 120, textAlign: 'center' } },
   { id: 'china-a1-no', type: 'output', data: { label: '145% Tariff', keyword: 'China 145% Tariff' }, position: { x: 0, y: 0 }, style: { background: '#5D70B4', color: 'white', width: 120, textAlign: 'center' } },
+  // 뉴스 반영: 90일간 임시 관세 인하 노드 추가 (미국→중국)
+  { id: 'china-a1-temp-us', type: 'output', data: { label: '30% Tariff (90 days, US→China)', keyword: 'US to China 30% Tariff 90 days', details: { description: '미국과 중국이 2025년 6월, 90일간 상호 관세를 대폭 인하하기로 합의. 미국은 중국산 수입품에 대한 관세를 145%에서 30%로 90일간 인하.' } }, position: { x: 0, y: 0 }, style: { background: '#FFD700', color: 'black', width: 180, textAlign: 'center', border: '2px dashed #5D70B4' } },
   { id: 'china-a1-yes', type: 'output', data: { label: '20% Fentanyl Tariff', keyword: 'China Fentanyl Tariff' }, position: { x: 0, y: 0 }, style: { background: '#82D0D4', color: 'black', width: 120, textAlign: 'center' } },
+  // 뉴스 반영: 90일간 임시 관세 인하 노드 추가 (중국→미국)
+  { id: 'china-a1-temp-cn', type: 'output', data: { label: '10% Tariff (90 days, China→US)', keyword: 'China to US 10% Tariff 90 days', details: { description: '중국도 미국산 수입품에 대한 관세를 125%에서 10%로 90일간 인하.' } }, position: { x: 0, y: 0 }, style: { background: '#FFD700', color: 'black', width: 180, textAlign: 'center', border: '2px dashed #5D70B4' } },
   { id: 'china-q2', type: 'default', data: { label: '>20% of Content from US?' }, position: { x: 0, y: 0 }, style: { width: 150, textAlign: 'center' } },
   { id: 'china-a2-no', type: 'output', data: { label: '145% Tariff on Full Customs Value', keyword: 'China 145% Full Value' }, position: { x: 0, y: 0 }, style: { background: '#82D0D4', color: 'black', width: 160, textAlign: 'center' } },
   { id: 'china-a2-yes', type: 'output', data: { label: 'US Content Is Tariff Free; Non-US Content Tariffed at 145%', keyword: 'China 145% US Content Free' }, position: { x: 0, y: 0 }, style: { background: '#82D0D4', color: 'black', width: 160, textAlign: 'center' } },
@@ -411,6 +415,10 @@ const initialEdges: Edge[] = [
   // China path
   { id: 'e-china-q1', source: 'china', target: 'china-q1', type: 'smoothstep', markerEnd: { type: MarkerType.ArrowClosed } },
   { id: 'e-china-q1-a1no', source: 'china-q1', target: 'china-a1-no', label: 'NO', type: 'smoothstep', markerEnd: { type: MarkerType.ArrowClosed } },
+  // 뉴스 반영: 145% → 30% 임시 관세 노드 연결
+  { id: 'e-china-a1no-tempus', source: 'china-a1-no', target: 'china-a1-temp-us', label: 'NEWS', type: 'smoothstep', markerEnd: { type: MarkerType.ArrowClosed }, style: { stroke: '#FFD700', strokeDasharray: '4 2' } },
+  // 뉴스 반영: 125% → 10% 임시 관세 노드 연결 (중국→미국)
+  { id: 'e-china-a1no-tempcn', source: 'china-a1-no', target: 'china-a1-temp-cn', label: 'NEWS', type: 'smoothstep', markerEnd: { type: MarkerType.ArrowClosed }, style: { stroke: '#FFD700', strokeDasharray: '4 2' } },
   { id: 'e-china-q1-a1yes', source: 'china-q1', target: 'china-a1-yes', label: 'YES', type: 'smoothstep', markerEnd: { type: MarkerType.ArrowClosed } },
   { id: 'e-china-a1no-q2', source: 'china-a1-no', target: 'china-q2', type: 'smoothstep', markerEnd: { type: MarkerType.ArrowClosed } },
   { id: 'e-china-q2-a2no', source: 'china-q2', target: 'china-a2-no', label: 'NO', type: 'smoothstep', markerEnd: { type: MarkerType.ArrowClosed } },
@@ -1788,19 +1796,15 @@ export default function TariffDiagram() {
       }
       
       // Update price display if node contains tariff info
-      if (node.data && (
-        (node.data.label && node.data.label.includes('Tariff:')) || 
-        (node.data.label && node.data.label.includes('Current:')) ||
-        (node.data.label && node.data.label.includes('Rate:'))
-      )) {
-        // Extract rate from the node label
+      if (node.data && node.data.label) {
+        // Extract rate from the node label using improved regex
         const rateString = node.data.label;
-        const rateMatch = rateString.match(/\\d+%/);
+        const rateMatch = rateString.match(/\d+(?:\.\d+)?%/);
         
         if (rateMatch) {
-          const rate = parseInt(rateMatch[0], 10);
+          const rate = parseFloat(rateMatch[0]);
           const adjustedPrice = BASE_PRICE * (1 + rate / 100);
-          setPriceDisplay(`$${BASE_PRICE} → $${adjustedPrice.toFixed(2)} (${rate}% Increase)`);
+          setPriceDisplay(`$${BASE_PRICE.toFixed(2)} → $${adjustedPrice.toFixed(2)} (${rate}% Increase)`);
         }
       }
       
