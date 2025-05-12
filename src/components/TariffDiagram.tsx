@@ -21,7 +21,6 @@ import tariffPolicyDataJson from '@/data/tariffPolicyEn.json';
 const tariffPolicyData: TariffPolicy = tariffPolicyDataJson;
 
 const INITIAL_PRICE_DISPLAY = '$100.00 📦 (Select a tariff scenario)';
-const BASE_PRICE = 100; // Example base price, adjust as needed
 
 // View types for filtering
 type ViewType = 'policy' | 'country' | 'item';
@@ -1585,8 +1584,8 @@ const ViewTypeSelector = ({ viewType, setViewType }: { viewType: ViewType, setVi
         onClick={() => setViewType('policy')}
         style={{ 
           padding: '8px 16px',
-          backgroundColor: viewType === 'policy' ? '#5D70B4' : '#f0f0f0',
-          color: viewType === 'policy' ? 'white' : 'black',
+          backgroundColor: viewType === 'policy' ? 'var(--accent-color)' : 'var(--sidebar-bg)',
+          color: viewType === 'policy' ? 'white' : 'var(--foreground)',
           border: 'none',
           borderRadius: '4px',
           cursor: 'pointer',
@@ -1599,8 +1598,8 @@ const ViewTypeSelector = ({ viewType, setViewType }: { viewType: ViewType, setVi
         onClick={() => setViewType('country')}
         style={{ 
           padding: '8px 16px',
-          backgroundColor: viewType === 'country' ? '#5D70B4' : '#f0f0f0',
-          color: viewType === 'country' ? 'white' : 'black',
+          backgroundColor: viewType === 'country' ? 'var(--accent-color)' : 'var(--sidebar-bg)',
+          color: viewType === 'country' ? 'white' : 'var(--foreground)',
           border: 'none',
           borderRadius: '4px',
           cursor: 'pointer',
@@ -1613,8 +1612,8 @@ const ViewTypeSelector = ({ viewType, setViewType }: { viewType: ViewType, setVi
         onClick={() => setViewType('item')}
         style={{ 
           padding: '8px 16px',
-          backgroundColor: viewType === 'item' ? '#5D70B4' : '#f0f0f0',
-          color: viewType === 'item' ? 'white' : 'black',
+          backgroundColor: viewType === 'item' ? 'var(--accent-color)' : 'var(--sidebar-bg)',
+          color: viewType === 'item' ? 'white' : 'var(--foreground)',
           border: 'none',
           borderRadius: '4px',
           cursor: 'pointer',
@@ -1726,97 +1725,93 @@ export default function TariffDiagram() {
     [setEdges],
   );
 
+  const getDetailedNodeInfo = (node: Node): DetailedNodeInfo | null => {
+    if (!node.data) return null;
+
+    let detailedInfo: DetailedNodeInfo = {
+      title: node.data.label,
+      details: []
+    };
+
+    // If the node has a 'details' property, use it for detailed info
+    if (node.data.details) {
+      // Convert details object to an array of {label, value} pairs
+      if (typeof node.data.details === 'object') {
+        Object.entries(node.data.details).forEach(([key, value]) => {
+          if (key !== 'description' && value !== undefined) {
+            detailedInfo.details?.push({
+              label: key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+              value: String(value)
+            });
+          }
+        });
+      }
+      
+      // Add description if available
+      if (node.data.details.description) {
+        detailedInfo.description = node.data.details.description;
+      }
+    }
+    // If the node has countryData or itemData, use that
+    else if (node.data.countryData || node.data.itemData) {
+      const data = node.data.countryData || node.data.itemData;
+      
+      // Convert top-level properties to details
+      if (typeof data === 'object') {
+        Object.entries(data).forEach(([key, value]) => {
+          if (value !== undefined) {
+            detailedInfo.details?.push({
+              label: key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+              value: value
+            });
+          }
+        });
+      }
+    }
+    // For simple nodes without nested data
+    else {
+      detailedInfo.description = node.data.keyword 
+        ? `Tariff classification: ${node.data.keyword}`
+        : undefined;
+    }
+
+    return detailedInfo;
+  };
+
   const onNodeClick = useCallback(
     (event: React.MouseEvent, node: Node) => {
-      // Reset previous highlights
-      resetHighlights();
-      
-      // Skip if clicking on the title node
-      if (node.id === 'title' || node.id === 'country-root' || node.id === 'item-root') {
-        return;
-      }
-      
-      // Create detailed node info based on the clicked node's data
-      let detailedInfo: DetailedNodeInfo | null = null;
-      
-      if (node.data) {
-        // If the node has a 'details' property, use it for detailed info
-        if (node.data.details) {
-          detailedInfo = {
-            title: node.data.label,
-            details: []
-          };
-          
-          // Convert details object to an array of {label, value} pairs
-          if (typeof node.data.details === 'object') {
-            Object.entries(node.data.details).forEach(([key, value]) => {
-              if (key !== 'description' && value !== undefined) {
-                detailedInfo?.details?.push({
-                  label: key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-                  value: String(value)
-                });
-              }
-            });
-          }
-          
-          // Add description if available
-          if (node.data.details.description) {
-            detailedInfo.description = node.data.details.description;
-          }
-        }
-        // If the node has countryData or itemData, use that
-        else if (node.data.countryData || node.data.itemData) {
-          const data = node.data.countryData || node.data.itemData;
-          
-          detailedInfo = {
-            title: node.data.label,
-            details: []
-          };
-          
-          // Convert top-level properties to details
-          if (typeof data === 'object') {
-            Object.entries(data).forEach(([key, value]) => {
-              // 중첩된 객체인 경우에도 적절하게 처리
-              if (value !== undefined) {
-                detailedInfo?.details?.push({
-                  label: key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-                  value: value
-                });
-              }
-            });
-          }
-        }
-        // For simple nodes without nested data
-        else {
-          detailedInfo = {
-            title: node.data.label,
-            description: node.data.keyword 
-              ? `Tariff classification: ${node.data.keyword}`
-              : undefined
-          };
-        }
-      }
-      
-      // Update price display if node contains tariff info
-      if (node.data && node.data.label) {
-        // Extract rate from the node label using improved regex
-        const rateString = node.data.label;
-        const rateMatch = rateString.match(/\d+(?:\.\d+)?%/);
-        
-        if (rateMatch) {
-          const rate = parseFloat(rateMatch[0]);
-          const adjustedPrice = BASE_PRICE * (1 + rate / 100);
-          setPriceDisplay(`$${BASE_PRICE.toFixed(2)} → $${adjustedPrice.toFixed(2)} (${rate}% Increase)`);
-        }
-      }
-      
-      // Set selected node info and show detail panel
+      // Reset all node styles first
+      setNodes((nds) =>
+        nds.map((n) => ({
+          ...n,
+          style: {
+            ...n.style,
+            borderColor: undefined,
+            borderWidth: undefined,
+          },
+        }))
+      );
+
+      // Reset all edge styles
+      setEdges((eds) =>
+        eds.map((e) => ({
+          ...e,
+          style: {
+            ...e.style,
+            stroke: undefined,
+            strokeWidth: undefined,
+          },
+        }))
+      );
+
+      // Get detailed information for the clicked node
+      const detailedInfo = getDetailedNodeInfo(node);
       if (detailedInfo) {
         setSelectedNodeInfo(detailedInfo);
         setShowDetailPanel(true);
       }
       
-      // Continue with existing highlighting functionality
+      // Apply new highlight
       if (node.data && node.data.keyword) {
         const keyword = node.data.keyword;
         setSelectedTariffKeyword(keyword);
@@ -1839,7 +1834,7 @@ export default function TariffDiagram() {
         );
       }
     },
-    [setSelectedTariffKeyword, resetHighlights, setNodes, setSelectedNodeInfo, setShowDetailPanel]
+    [setSelectedTariffKeyword, setNodes, setEdges, setSelectedNodeInfo, setShowDetailPanel]
   );
 
   // Detail panel component - replace the existing DetailPanel with this improved version
@@ -1853,11 +1848,11 @@ export default function TariffDiagram() {
         top: '100px',
         width: '300px',
         padding: '15px',
-        backgroundColor: 'white',
+        backgroundColor: 'var(--main-content-bg)',
         boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
         borderRadius: '8px',
         zIndex: 10,
-        border: '1px solid #e0e0e0',
+        border: '1px solid var(--border-color)',
         maxHeight: '600px',
         overflowY: 'auto'
       }}>
@@ -1866,13 +1861,13 @@ export default function TariffDiagram() {
           justifyContent: 'space-between', 
           alignItems: 'center', 
           marginBottom: '15px',
-          borderBottom: '1px solid #eee',
+          borderBottom: '1px solid var(--border-color)',
           paddingBottom: '10px' 
         }}>
           <h3 style={{ 
             margin: 0, 
             fontSize: '16px',
-            color: '#333',
+            color: 'var(--foreground)',
             fontWeight: 'bold'
           }}>{selectedNodeInfo.title}</h3>
           <button 
@@ -1882,7 +1877,7 @@ export default function TariffDiagram() {
               border: 'none', 
               cursor: 'pointer', 
               fontSize: '16px',
-              color: '#999',
+              color: 'var(--foreground)',
               padding: '4px',
               borderRadius: '50%',
               display: 'flex',
@@ -1892,7 +1887,7 @@ export default function TariffDiagram() {
               height: '24px',
               transition: 'background-color 0.2s'
             }}
-            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f0f0f0'}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--hover-bg-color)'}
             onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
           >
             ✕
@@ -1903,8 +1898,7 @@ export default function TariffDiagram() {
           <p style={{ 
             margin: '10px 0', 
             fontSize: '14px',
-            color: '#555',
-            lineHeight: '1.5'
+            color: 'var(--foreground)',
           }}>{selectedNodeInfo.description}</p>
         )}
         
@@ -1914,27 +1908,26 @@ export default function TariffDiagram() {
               <div key={idx} style={{ 
                 marginBottom: '10px',
                 padding: '8px',
-                backgroundColor: idx % 2 === 0 ? '#f9f9f9' : 'transparent',
+                backgroundColor: idx % 2 === 0 ? 'var(--sidebar-bg)' : 'transparent',
                 borderRadius: '4px'
               }}>
                 <strong style={{ 
                   fontSize: '13px',
-                  color: '#5D70B4',
+                  color: 'var(--accent-color)',
                   display: 'block',
                   marginBottom: '3px'
                 }}>{detail.label}:</strong> 
                 <span style={{ 
                   fontSize: '14px', 
-                  color: '#333',
+                  color: 'var(--foreground)',
                   wordBreak: 'break-word',
                   whiteSpace: typeof detail.value === 'object' && detail.value !== null ? 'pre-wrap' : 'normal',
                   fontFamily: typeof detail.value === 'object' && detail.value !== null ? 'monospace' : 'inherit'
-                }}>{
-                  // 객체인 경우 JSON.stringify로 변환
-                  typeof detail.value === 'object' && detail.value !== null
+                }}>
+                  {typeof detail.value === 'object' && detail.value !== null
                     ? JSON.stringify(detail.value, null, 2)
-                    : detail.value
-                }</span>
+                    : detail.value}
+                </span>
               </div>
             ))}
           </div>
@@ -1943,12 +1936,12 @@ export default function TariffDiagram() {
         {selectedNodeInfo.relatedLinks && selectedNodeInfo.relatedLinks.length > 0 && (
           <div style={{ 
             marginTop: '20px',
-            borderTop: '1px solid #eee',
+            borderTop: '1px solid var(--border-color)',
             paddingTop: '15px'
           }}>
             <strong style={{ 
               fontSize: '14px',
-              color: '#333'
+              color: 'var(--foreground)'
             }}>Related Information:</strong>
             <ul style={{ 
               paddingLeft: '20px',
@@ -1960,10 +1953,9 @@ export default function TariffDiagram() {
                     href="#" 
                     onClick={(e) => {
                       e.preventDefault();
-                      /* Navigate to related node logic would go here */
                     }}
                     style={{
-                      color: '#5D70B4',
+                      color: 'var(--accent-color)',
                       textDecoration: 'none',
                       fontSize: '14px'
                     }}
@@ -1977,84 +1969,83 @@ export default function TariffDiagram() {
     );
   };
 
-  return (
-    <div style={{ width: '100%', height: '800px', position: 'relative', padding: '15px', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
-      <h2 style={{ textAlign: 'center', margin: '0 0 15px 0', color: '#333' }}>Trump 2025 Tariff Policy Visualization</h2>
-      
-      <ViewTypeSelector viewType={viewType} setViewType={setViewType} />
-      
-      <div style={{ 
-        height: '600px', 
-        border: '1px solid #e0e0e0',
-        borderRadius: '8px',
-        overflow: 'hidden',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
-      }}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onNodeClick={onNodeClick}
-          fitView
-          attributionPosition="bottom-left"
-          nodesDraggable={true}
-          panOnDrag={false} // Disable panning when dragging
-          style={{ background: '#fcfcfc' }}
-        >
-          <MiniMap 
-            nodeColor={nodeColor} 
-            nodeStrokeWidth={3} 
-            zoomable 
-            pannable 
-            style={{
-              background: 'white',
-              border: '1px solid #e0e0e0',
-              borderRadius: '4px'
-            }}
-          />
-          <Controls />
-          <Background color="#aaa" gap={16} />
-        </ReactFlow>
-      </div>
-      
-      <div style={{ 
-        marginTop: '15px', 
-        display: 'flex', 
-        justifyContent: 'space-between',
-        alignItems: 'center'
-      }}>
-        <button 
-          onClick={resetHighlights} 
-          style={{ 
-            padding: '10px 20px',
-            backgroundColor: '#5D70B4',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontWeight: 'bold',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-            transition: 'background-color 0.2s'
-          }}
-          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#4A5C9F'}
-          onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#5D70B4'}
-        >
-          Clear Selection / Reset Diagram
-        </button>
+  // Replace React Flow with static SVG
+  const StaticDiagram = ({ viewType }: { viewType: ViewType }) => {
+    const [selectedNode, setSelectedNode] = useState<string | null>(null);
+    const [showDetailPanel, setShowDetailPanel] = useState(false);
+    const [selectedNodeInfo, setSelectedNodeInfo] = useState<DetailedNodeInfo | null>(null);
+
+    const handleNodeClick = (nodeId: string, nodeData: any) => {
+      setSelectedNode(nodeId);
+      const info = getDetailedNodeInfo({ id: nodeId, data: nodeData } as Node);
+      if (info) {
+        setSelectedNodeInfo(info);
+        setShowDetailPanel(true);
+      }
+    };
+
+    const renderPolicyView = () => (
+      <svg width="100%" height="600" viewBox="0 0 800 600">
+        {/* Root node */}
+        <g transform="translate(400,50)">
+          <rect x="-100" y="-30" width="200" height="60" rx="10" fill="#5D70B4" />
+          <text x="0" y="5" textAnchor="middle" fill="white" fontSize="16">Trump 2025 Tariff Policy</text>
+        </g>
+
+        {/* Main branches */}
+        <g transform="translate(400,150)">
+          <line x1="0" y1="0" x2="-200" y2="100" stroke="var(--foreground)" strokeWidth="2" />
+          <line x1="0" y1="0" x2="0" y2="100" stroke="var(--foreground)" strokeWidth="2" />
+          <line x1="0" y1="0" x2="200" y2="100" stroke="var(--foreground)" strokeWidth="2" />
+          
+          {/* Branch labels */}
+          <text x="-200" y="120" textAnchor="middle" fill="var(--foreground)">China</text>
+          <text x="0" y="120" textAnchor="middle" fill="var(--foreground)">Canada/Mexico</text>
+          <text x="200" y="120" textAnchor="middle" fill="var(--foreground)">Other Regions</text>
+        </g>
+
+        {/* Add more static elements as needed */}
+      </svg>
+    );
+
+    const renderCountryView = () => (
+      <svg width="100%" height="600" viewBox="0 0 800 600">
+        {/* Similar structure for country view */}
+      </svg>
+    );
+
+    const renderItemView = () => (
+      <svg width="100%" height="600" viewBox="0 0 800 600">
+        {/* Similar structure for item view */}
+      </svg>
+    );
+
+    return (
+      <div style={{ width: '100%', height: '800px', position: 'relative', padding: '15px' }}>
+        <h2 style={{ textAlign: 'center', margin: '0 0 15px 0', color: 'var(--foreground)' }}>
+          Trump 2025 Tariff Policy Visualization
+        </h2>
+        
+        <ViewTypeSelector viewType={viewType} setViewType={setViewType} />
         
         <div style={{ 
-          padding: '10px 15px', 
-          color: '#333',
-          fontSize: '14px',
-          fontWeight: 'bold'
+          height: '600px', 
+          border: '1px solid var(--border-color)',
+          borderRadius: '8px',
+          overflow: 'hidden',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
         }}>
-          <span style={{ color: '#5D70B4' }}>Estimated Price:</span> {priceDisplay}
+          {viewType === 'policy' && renderPolicyView()}
+          {viewType === 'country' && renderCountryView()}
+          {viewType === 'item' && renderItemView()}
         </div>
+
+        {showDetailPanel && selectedNodeInfo && (
+          <DetailPanel />
+        )}
       </div>
-      
-      {showDetailPanel && <DetailPanel />}
-    </div>
-  );
+    );
+  };
+
+  return <StaticDiagram viewType={viewType} />;
 } 

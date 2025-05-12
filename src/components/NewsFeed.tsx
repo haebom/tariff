@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { XMLParser } from 'fast-xml-parser';
 import { useSharedState } from '@/context/AppContext'; // Import shared context
 import Image from 'next/image';
@@ -62,6 +62,7 @@ export default function NewsFeed() {
   const [error, setError] = useState<string | null>(null);
   const [filterKeywords, setFilterKeywords] = useState<string[]>([]);
   const [rawFilterTerm, setRawFilterTerm] = useState('');
+  const [filteredNewsItems, setFilteredNewsItems] = useState<NewsItem[]>([]);
 
   const { selectedTariffKeyword } = useSharedState(); // Get shared state
 
@@ -247,22 +248,38 @@ export default function NewsFeed() {
     }
   };
 
-  const filteredNewsItems = newsItems.filter(item => {
-    // If no filter keywords (and rawFilterTerm is empty), show all items
-    if (filterKeywords.length === 0) {
-      return true; 
+  const filterNewsItems = useCallback(() => {
+    if (!rawFilterTerm.trim()) {
+      return newsItems;
     }
 
-    // Improved OR search logic - match any keyword in title or description
-    return filterKeywords.some(keyword => {
-      if (!keyword) return false; // Prevent empty keyword
-      const lowerKeyword = keyword.toLowerCase();
-      const titleMatch = item.title.toLowerCase().includes(lowerKeyword);
-      const descriptionMatch = item.description && item.description.toLowerCase().includes(lowerKeyword);
-      
-      return titleMatch || descriptionMatch;
+    // Split search terms by spaces and filter out empty strings
+    const searchTerms = rawFilterTerm.toLowerCase().split(/\s+/).filter(term => term.length > 0);
+    
+    return newsItems.filter(item => {
+      // Check if any of the search terms match (OR operation)
+      return searchTerms.some(term => {
+        // Split the term into individual keywords if it contains OR
+        const keywords = term.split(/\s*or\s*/i);
+        
+        // Check if any of the keywords match (OR operation)
+        return keywords.some(keyword => {
+          const titleMatch = item.title.toLowerCase().includes(keyword);
+          const descriptionMatch = item.description && item.description.toLowerCase().includes(keyword);
+          const dateMatch = item.pubDate && item.pubDate.toLowerCase().includes(keyword);
+          const sourceMatch = item.source && item.source.toLowerCase().includes(keyword);
+          
+          return titleMatch || descriptionMatch || dateMatch || sourceMatch;
+        });
+      });
     });
-  });
+  }, [rawFilterTerm, newsItems]);
+
+  // Update filtered news items when filter term changes
+  useEffect(() => {
+    const filtered = filterNewsItems();
+    setFilteredNewsItems(filtered);
+  }, [filterNewsItems]);
 
   // Tailwind CSS classes for styling
   const asideContainerClasses = "h-full flex flex-col bg-sidebar-bg text-foreground";

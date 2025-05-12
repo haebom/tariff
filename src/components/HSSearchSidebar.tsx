@@ -1,6 +1,6 @@
 'use client'; // This component will have client-side interactions (state, event handlers)
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { getHSSections, getHSData, HSSection, HSData } from '../lib/dataHandler'; // 수정된 임포트
 import { useSharedState } from '@/context/AppContext'; // 공유 컨텍스트 import
 
@@ -10,16 +10,14 @@ const MAX_TABLE_ROWS = 50;
 
 export default function HSSearchSidebar() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedSection, setSelectedSection] = useState('');
+  const [hsData, setHsData] = useState<HSData[]>([]);
   const [sections, setSections] = useState<HSSection[]>([]);
-  const [hsData, setHsData] = useState<HSData[]>([]); // 전체 원본 HS 데이터
-  const [filteredHsData, setFilteredHsData] = useState<HSData[]>([]); // 필터링된 결과 (초기에는 비어있음)
-  const [displayData, setDisplayData] = useState<HSData[]>([]); // 화면에 표시될 데이터 (MAX_TABLE_ROWS 제한)
-  const [chartData, setChartData] = useState({ count: 0, total: 0 });
-  const [isLoading, setIsLoading] = useState(true); // 데이터 로딩 상태
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedSection, setSelectedSection] = useState<string>('');
-
-  const { selectedTariffKeyword } = useSharedState(); // 공유 상태 가져오기
+  const [displayData, setDisplayData] = useState<HSData[]>([]);
+  const [chartData, setChartData] = useState({ count: 0, total: 0 });
+  const { setSelectedTariffKeyword } = useSharedState();
 
   // sections 변수 사용 (임시 - 추후 UI에 실제 사용)
   // useEffect(() => {
@@ -41,89 +39,76 @@ export default function HSSearchSidebar() {
     // }
   }, [selectedTariffKeyword]);
 
-  // 데이터 로딩
+  // Load data on component mount
   useEffect(() => {
-    async function loadData() {
-      setIsLoading(true);
-      setError(null);
-      setFilteredHsData([]); // 데이터 로드 시작 시 필터링된 데이터 초기화
-      setDisplayData([]);    // 화면 표시 데이터도 초기화
+    const loadData = async () => {
       try {
-        // Promise.all을 사용하여 두 데이터를 병렬로 가져올 수 있습니다.
-        const [sectionsData, allHsData] = await Promise.all([
+        setIsLoading(true);
+        const [sectionsData, hsData] = await Promise.all([
           getHSSections(),
           getHSData()
         ]);
         setSections(sectionsData);
-        setHsData(allHsData); // 원본 데이터 저장
-        // 초기에는 filteredHsData를 설정하지 않음. 사용자가 검색하거나 섹션을 선택할 때 업데이트
+        setHsData(hsData);
+        setError(null);
       } catch (err) {
-        console.error("Failed to load HS data:", err);
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+        setError(err instanceof Error ? err.message : 'Failed to load data');
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
-    }
+    };
+
     loadData();
   }, []);
 
-  // selectedSection 또는 searchTerm이 변경될 때 필터링된 데이터 업데이트
-  useEffect(() => {
-    // 검색어나 선택된 섹션이 있을 때만 필터링 수행
-    if (searchTerm || selectedSection) {
-      let currentData = hsData;
-      if (selectedSection && hsData.length > 0) {
-        currentData = hsData.filter(item => item.section === selectedSection);
-      }
-      if (searchTerm) {
-        const lowerCaseQuery = searchTerm.toLowerCase();
-        const isFromDiagram = selectedTariffKeyword && searchTerm === selectedTariffKeyword;
-        // 다이어그램 키워드는 공백, 쉼표, 세미콜론, %, 마침표 등을 기준으로 단어 분리. 길이가 1보다 큰 단어만 사용.
-        const searchWords = isFromDiagram 
-          ? lowerCaseQuery.split(/[\s,;%\.]+/).filter(word => word && word.length > 1) 
-          : [];
-
-        currentData = currentData.filter(item => {
-          const normalizedHsCode = item.hscode.replace(/\./g, '');
-          const lowerCaseDescription = item.description.toLowerCase();
-
-          if (isFromDiagram && searchWords.length > 0) {
-            // 다이어그램에서 온 키워드: 분리된 단어 중 하나라도 설명이나 HS코드에 포함되는지 확인
-            // 예: "Tariff", "US", "Content", "25" 등의 단어가 설명이나 코드에 나타나는지
-            return searchWords.some(word => {
-              if (!word) return false; // 빈 단어는 스킵
-              const cleanWord = word.replace(/\./g, ''); // HS 코드와 비교를 위해 단어에서도 점 제거
-              return lowerCaseDescription.includes(word) || // 원본 단어로 설명 검색
-                     normalizedHsCode.includes(cleanWord);   // 점 제거된 단어로 HS 코드 검색
-            });
-          } else {
-            // 일반 검색 또는 숫자/점으로만 이루어진 HS 코드 검색
-            const hsCodeMatchesDirect = normalizedHsCode.startsWith(lowerCaseQuery.replace(/[\.\s]/g, ''));
-            const descriptionMatchesDirect = lowerCaseDescription.includes(lowerCaseQuery);
-            
-            if (/^[\d\.]+$/.test(lowerCaseQuery) && !isFromDiagram) { // 검색어가 숫자와 점으로만 (다이어그램 키워드 아닐 때)
-              return hsCodeMatchesDirect || descriptionMatchesDirect;
-            }
-            return descriptionMatchesDirect || hsCodeMatchesDirect; // 일반 텍스트 검색 (다이어그램 키워드 아닐 때)
-          }
-        });
-      }
-      setFilteredHsData(currentData);
-    } else {
-      setFilteredHsData([]); // 검색어와 선택된 섹션이 모두 없으면 필터된 데이터 비움
+  const filterData = useCallback(() => {
+    if (!searchTerm.trim()) {
+      return selectedSection 
+        ? hsData.filter(item => item.section === selectedSection)
+        : hsData;
     }
-  }, [searchTerm, selectedSection, hsData, selectedTariffKeyword]);
 
+    // Split search terms by spaces and filter out empty strings
+    const searchTerms = searchTerm.toLowerCase().split(/\s+/).filter(term => term.length > 0);
+    
+    return hsData.filter(item => {
+      // If section is selected, first filter by section
+      if (selectedSection && item.section !== selectedSection) {
+        return false;
+      }
+
+      // Check if any of the search terms match (OR operation)
+      return searchTerms.some(term => {
+        // Split the term into individual keywords if it contains OR
+        const keywords = term.split(/\s*or\s*/i);
+        
+        // Check if any of the keywords match (OR operation)
+        return keywords.some(keyword => {
+          const hscodeMatch = item.hscode.toLowerCase().includes(keyword);
+          const descriptionMatch = item.description.toLowerCase().includes(keyword);
+          const sectionMatch = item.section.toLowerCase().includes(keyword);
+          const levelMatch = item.level.toLowerCase().includes(keyword);
+          
+          return hscodeMatch || descriptionMatch || sectionMatch || levelMatch;
+        });
+      });
+    });
+  }, [searchTerm, selectedSection, hsData]);
+
+  // Update filtered data when search term or section changes
   useEffect(() => {
-    setDisplayData(filteredHsData.slice(0, MAX_TABLE_ROWS));
-    // 차트 데이터는 필터된 결과 기준, 전체는 선택된 섹션 또는 전체 HS 데이터 기준
+    const filteredData = filterData();
+    setDisplayData(filteredData.slice(0, MAX_TABLE_ROWS));
+    
+    // Update chart data
     const baseTotal = selectedSection ? hsData.filter(item => item.section === selectedSection).length : hsData.length;
-    setChartData({ count: filteredHsData.length, total: baseTotal > 0 ? baseTotal : 1 }); // total이 0이 되는 것 방지
-  }, [filteredHsData, selectedSection, hsData]);
+    setChartData({ count: filteredData.length, total: baseTotal > 0 ? baseTotal : 1 });
+  }, [filterData, hsData, selectedSection]);
 
-  // Canvas 차트 (기존 로직을 최대한 활용하되, CSS 변수 접근 방식 개선)
+  // Canvas chart
   useEffect(() => {
     const canvas = document.getElementById('hs-chart-canvas') as HTMLCanvasElement;
-    if (canvas && chartData.total > 0) { // chartData.total이 0보다 클 때만 실행
+    if (canvas && chartData.total > 0) {
       const ctx = canvas.getContext('2d');
       if (ctx) {
         const canvasWidth = canvas.width;
@@ -132,8 +117,7 @@ export default function HSSearchSidebar() {
 
         const barWidth = (chartData.count / chartData.total) * canvasWidth;
         
-        // Tailwind CSS의 테마 색상을 사용하거나, CSS 변수를 안전하게 가져옵니다.
-        const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--tw-color-blue-500') || '#3b82f6'; // Tailwind blue-500
+        const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--tw-color-blue-500') || '#3b82f6';
         const fgColor = getComputedStyle(document.documentElement).getPropertyValue('--foreground') || '#e0e0e0';
 
         ctx.fillStyle = accentColor;
@@ -144,7 +128,7 @@ export default function HSSearchSidebar() {
         ctx.fillText(`Results: ${chartData.count} / ${chartData.total}`, 5, canvasHeight - 5);
       }
     }
-  }, [chartData]); 
+  }, [chartData]);
 
   const tableHeaders = ['HS Code', 'Description', 'Section', 'Level'];
 
@@ -259,10 +243,10 @@ export default function HSSearchSidebar() {
                 <td className={tdClasses}>{item.level}</td>
               </tr>
             ))}
-            {filteredHsData.length > MAX_TABLE_ROWS && (
+            {filteredData.length > MAX_TABLE_ROWS && (
               <tr>
                 <td colSpan={tableHeaders.length} className={`${messageClasses} italic`}>
-                  {`Showing ${MAX_TABLE_ROWS} of ${filteredHsData.length} results. Refine your search.`}
+                  {`Showing ${MAX_TABLE_ROWS} of ${filteredData.length} results. Refine your search.`}
                 </td>
               </tr>
             )}
