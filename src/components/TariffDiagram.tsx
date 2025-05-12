@@ -1642,18 +1642,15 @@ export default function TariffDiagram() {
     let layoutedElements;
 
     if (viewType === 'policy') {
-      // Use the original policy-based diagram for now
       nodesCopy = initialNodes.map(n => ({ ...n, data: { ...n.data }, style: { ...n.style } }));
       edgesCopy = initialEdges.map(e => ({ ...e, style: { ...e.style } }));
       layoutedElements = getLayoutedElements(nodesCopy, edgesCopy);
     } 
     else if (viewType === 'country') {
-      // Generate country-based diagram
       const countryDiagram = generateCountryViewDiagram();
       layoutedElements = getLayoutedElements(countryDiagram.nodes, countryDiagram.edges);
     }
     else if (viewType === 'item') {
-      // Generate item-based diagram
       const itemDiagram = generateItemViewDiagram();
       layoutedElements = getLayoutedElements(itemDiagram.nodes, itemDiagram.edges);
     }
@@ -1663,66 +1660,12 @@ export default function TariffDiagram() {
       setEdges(layoutedElements.edges);
     }
     
-    // Reset any selections when changing view
     setSelectedTariffKeyword(null);
     setSelectedNodeInfo(null);
     
   }, [viewType, setNodes, setEdges, setSelectedTariffKeyword]);
 
-  const getDetailedNodeInfo = (node: Node): DetailedNodeInfo | null => {
-    if (!node.data) return null;
-
-    const detailedInfo: DetailedNodeInfo = {
-      title: node.data.label,
-      details: []
-    };
-
-    // If the node has a 'details' property, use it for detailed info
-    if (node.data.details) {
-      // Convert details object to an array of {label, value} pairs
-      if (typeof node.data.details === 'object') {
-        Object.entries(node.data.details).forEach(([key, value]) => {
-          if (key !== 'description' && value !== undefined) {
-            detailedInfo.details?.push({
-              label: key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-              value: String(value)
-            });
-          }
-        });
-      }
-      
-      // Add description if available
-      if (node.data.details.description) {
-        detailedInfo.description = node.data.details.description;
-      }
-    }
-    // If the node has countryData or itemData, use that
-    else if (node.data.countryData || node.data.itemData) {
-      const data = node.data.countryData || node.data.itemData;
-      
-      // Convert top-level properties to details
-      if (typeof data === 'object') {
-        Object.entries(data).forEach(([key, value]) => {
-          if (value !== undefined) {
-            detailedInfo.details?.push({
-              label: key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-              value: value
-            });
-          }
-        });
-      }
-    }
-    // For simple nodes without nested data
-    else {
-      detailedInfo.description = node.data.keyword 
-        ? `Tariff classification: ${node.data.keyword}`
-        : undefined;
-    }
-
-    return detailedInfo;
-  };
-
-  // Detail panel component - replace the existing DetailPanel with this improved version
+  // Detail panel component
   const DetailPanel = () => {
     if (!selectedNodeInfo) return null;
     
@@ -1815,39 +1758,6 @@ export default function TariffDiagram() {
                 </span>
               </div>
             ))}
-          </div>
-        )}
-        
-        {selectedNodeInfo.relatedLinks && selectedNodeInfo.relatedLinks.length > 0 && (
-          <div style={{ 
-            marginTop: '20px',
-            borderTop: '1px solid var(--border-color)',
-            paddingTop: '15px'
-          }}>
-            <strong style={{ 
-              fontSize: '14px',
-              color: 'var(--foreground)'
-            }}>Related Information:</strong>
-            <ul style={{ 
-              paddingLeft: '20px',
-              marginTop: '8px'
-            }}>
-              {selectedNodeInfo.relatedLinks.map((link, idx) => (
-                <li key={idx} style={{ marginTop: '5px' }}>
-                  <a 
-                    href="#" 
-                    onClick={(e) => {
-                      e.preventDefault();
-                    }}
-                    style={{
-                      color: 'var(--accent-color)',
-                      textDecoration: 'none',
-                      fontSize: '14px'
-                    }}
-                  >{link.label}</a>
-                </li>
-              ))}
-            </ul>
           </div>
         )}
       </div>
