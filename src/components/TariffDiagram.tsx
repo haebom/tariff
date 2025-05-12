@@ -17,7 +17,8 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import { useSharedState } from '@/context/AppContext';
 import dagre from 'dagre';
-import tariffPolicyData from '@/data/tariffPolicyEn.json';
+import tariffPolicyDataJson from '@/data/tariffPolicyEn.json';
+const tariffPolicyData: TariffPolicy = tariffPolicyDataJson;
 
 const INITIAL_PRICE_DISPLAY = '$100.00 📦 (Select a tariff scenario)';
 const BASE_PRICE = 100; // Example base price, adjust as needed
@@ -97,9 +98,9 @@ interface April11thExemption {
 
 interface ChinaSpecialProvision {
   category: string;
-  applicable_items: string[];
-  tariff_rate: string;
-  description: string;
+  applicable_items?: string[];
+  tariff_rate?: string; // Changed to optional
+  description?: string;
   target_countries?: string[];
   effective_date?: string;
 }
@@ -270,7 +271,7 @@ interface AgriculturalProductsTariff {
 }
 
 interface OtherItemDetail {
-  tariff: string;
+  tariff?: string; // Changed to optional
   additional_investigation?: string;
   investigation_completion_date?: string;
   implementation?: string; // Film
@@ -298,7 +299,7 @@ interface ItemSpecificTariffs {
 }
 
 interface IndustryImpactDetail {
-  price_impact: string | number | Record<string, unknown>;
+  price_impact?: string | number | Record<string, unknown>; // Changed to optional
   supply_chain_changes?: string | number | Record<string, unknown>;
   future_outlook?: string | number | Record<string, unknown>;
   sales_outlook?: string | number | Record<string, unknown>;
