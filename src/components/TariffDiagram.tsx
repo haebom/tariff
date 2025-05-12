@@ -298,19 +298,19 @@ interface ItemSpecificTariffs {
 }
 
 interface IndustryImpactDetail {
-  price_impact: any; // Could be more specific if needed
-  supply_chain_changes?: any;
-  future_outlook?: any;
-  sales_outlook?: any;
-  production_shifts?: any;
-  consumer_behavior?: any;
-  farm_input_costs?: any;
-  export_impact?: any;
-  food_prices?: any;
-  sourcing_shifts?: any;
-  retailer_strategies?: any;
+  price_impact: string | number | Record<string, unknown>;
+  supply_chain_changes?: string | number | Record<string, unknown>;
+  future_outlook?: string | number | Record<string, unknown>;
+  sales_outlook?: string | number | Record<string, unknown>;
+  production_shifts?: string | number | Record<string, unknown>;
+  consumer_behavior?: string | number | Record<string, unknown>;
+  farm_input_costs?: string | number | Record<string, unknown>;
+  export_impact?: string | number | Record<string, unknown>;
+  food_prices?: string | number | Record<string, unknown>;
+  sourcing_shifts?: string | number | Record<string, unknown>;
+  retailer_strategies?: string | number | Record<string, unknown>;
   vulnerability?: string;
-  major_supplier_tariffs?: any;
+  major_supplier_tariffs?: string | number | Record<string, unknown>;
 }
 
 interface IndustryImpacts {
@@ -321,46 +321,46 @@ interface IndustryImpacts {
   agricultural_industry: IndustryImpactDetail;
 }
 
-const typedTariffPolicyData = tariffPolicyData as TariffPolicy;
+// const typedTariffPolicyData = tariffPolicyData as TariffPolicy;
 
 // Updated helper function for price calculation
-const calculatePriceDisplay = (basePrice: number, label: string): string => {
-  if (!label) return INITIAL_PRICE_DISPLAY;
+// const calculatePriceDisplay = (basePrice: number, label: string): string => {
+//   if (!label) return INITIAL_PRICE_DISPLAY;
 
-  const noTariffsMatch = label.toLowerCase().includes('no tariffs');
-  const percentageMatch = label.match(/(\d+)%\sTariff(?:\s|$)/i); // Includes cases like "X% Tariff" or "X% Fentanyl Tariff"
-  const fentanylTariffMatch = label.match(/(\d+)%\sFentanyl\sTariff/i);
-  const fullValueMatch = label.match(/(\d+)%\sTariff\son\sFull\sCustoms\sValue/i);
-  const usContentFreeMatch = label.match(/US\sContent\sIs\sTariff\sFree;\sNon-US\sContent\sTariffed\sat\s(\d+)%/i);
+//   const noTariffsMatch = label.toLowerCase().includes('no tariffs');
+//   const percentageMatch = label.match(/(\d+)%\sTariff(?:\s|$)/i); // Includes cases like "X% Tariff" or "X% Fentanyl Tariff"
+//   const fentanylTariffMatch = label.match(/(\d+)%\sFentanyl\sTariff/i);
+//   const fullValueMatch = label.match(/(\d+)%\sTariff\son\sFull\sCustoms\sValue/i);
+//   const usContentFreeMatch = label.match(/US\sContent\sIs\sTariff\sFree;\sNon-US\sContent\sTariffed\sat\s(\d+)%/i);
 
-  let rate = 0;
-  let finalPrice = basePrice;
-  let calculationNote = "";
+//   let rate = 0;
+//   let finalPrice = basePrice;
+//   let calculationNote = "";
 
-  if (noTariffsMatch) {
-    return `$${basePrice.toFixed(2)} 📦 (No Tariffs)`;
-  } else if (usContentFreeMatch) {
-    rate = parseFloat(usContentFreeMatch[1]) / 100;
-    finalPrice = basePrice * (1 + rate); // Assuming 100% non-US content for this example
-    calculationNote = ` (Non-US content tariffed at ${usContentFreeMatch[1]}%; US content tariff-free. Example assumes 100% non-US content.)`;
-    return `$${basePrice.toFixed(2)} 📦 → $${finalPrice.toFixed(2)}${calculationNote}`;
-  } else if (fentanylTariffMatch) {
-    rate = parseFloat(fentanylTariffMatch[1]) / 100;
-    finalPrice = basePrice * (1 + rate);
-    return `$${basePrice.toFixed(2)} 📦 + ${fentanylTariffMatch[1]}% Fentanyl Tariff = $${finalPrice.toFixed(2)}`;
-  } else if (fullValueMatch) {
-    rate = parseFloat(fullValueMatch[1]) / 100;
-    finalPrice = basePrice * (1 + rate);
-    calculationNote = " (on full customs value)";
-    return `$${basePrice.toFixed(2)} 📦 + ${fullValueMatch[1]}% Tariff = $${finalPrice.toFixed(2)}${calculationNote}`;
-  } else if (percentageMatch) {
-    rate = parseFloat(percentageMatch[1]) / 100;
-    finalPrice = basePrice * (1 + rate);
-    return `$${basePrice.toFixed(2)} 📦 + ${percentageMatch[1]}% Tariff = $${finalPrice.toFixed(2)}`;
-  }
+//   if (noTariffsMatch) {
+//     return `$${basePrice.toFixed(2)} 📦 (No Tariffs)`;
+//   } else if (usContentFreeMatch) {
+//     rate = parseFloat(usContentFreeMatch[1]) / 100;
+//     finalPrice = basePrice * (1 + rate); // Assuming 100% non-US content for this example
+//     calculationNote = ` (Non-US content tariffed at ${usContentFreeMatch[1]}%; US content tariff-free. Example assumes 100% non-US content.)`;
+//     return `$${basePrice.toFixed(2)} 📦 → $${finalPrice.toFixed(2)}${calculationNote}`;
+//   } else if (fentanylTariffMatch) {
+//     rate = parseFloat(fentanylTariffMatch[1]) / 100;
+//     finalPrice = basePrice * (1 + rate);
+//     return `$${basePrice.toFixed(2)} 📦 + ${fentanylTariffMatch[1]}% Fentanyl Tariff = $${finalPrice.toFixed(2)}`;
+//   } else if (fullValueMatch) {
+//     rate = parseFloat(fullValueMatch[1]) / 100;
+//     finalPrice = basePrice * (1 + rate);
+//     calculationNote = " (on full customs value)";
+//     return `$${basePrice.toFixed(2)} 📦 + ${fullValueMatch[1]}% Tariff = $${finalPrice.toFixed(2)}${calculationNote}`;
+//   } else if (percentageMatch) {
+//     rate = parseFloat(percentageMatch[1]) / 100;
+//     finalPrice = basePrice * (1 + rate);
+//     return `$${basePrice.toFixed(2)} 📦 + ${percentageMatch[1]}% Tariff = $${finalPrice.toFixed(2)}`;
+//   }
 
-  return `$${basePrice.toFixed(2)} 📦 (Tariff info: "${label}")`; // Fallback
-};
+//   return `$${basePrice.toFixed(2)} 📦 (Tariff info: "${label}")`; // Fallback
+// };
 
 // 초기 노드 정의
 const initialNodes: Node[] = [
@@ -519,7 +519,7 @@ const generateCountryViewDiagram = () => {
   ];
   
   // Add country nodes
-  countries.forEach((country, index) => {
+  countries.forEach((country) => {
     const countryId = `country-${country.id}`;
     
     // Create country node
@@ -847,7 +847,7 @@ const generateCountryViewDiagram = () => {
       const partnersData = country.data as OtherMajorTradePartners; // Type assertion
       
       if (partnersData) {
-        (Object.keys(partnersData) as (keyof OtherMajorTradePartners)[]).forEach((partnerKey, pIdx) => {
+        (Object.keys(partnersData) as (keyof OtherMajorTradePartners)[]).forEach((partnerKey) => {
           const partner = partnersData[partnerKey] as OtherMajorTradePartnerDetail;
           const partnerId = `${countryId}-${partnerKey}`;
           
@@ -987,7 +987,7 @@ const generateItemViewDiagram = () => {
   ];
   
   // Create nodes and edges for each product category
-  productCategories.forEach((category, index) => {
+  productCategories.forEach((category) => {
     const categoryId = `item-${category.id}`;
     
     // Create category node
@@ -1491,10 +1491,10 @@ const generateItemViewDiagram = () => {
         // If price_impact is an object with nested properties
         if (typeof priceImpactData === 'object' && priceImpactData !== null) {
           // Add detailed impact nodes for key aspects
-          Object.keys(priceImpactData).forEach((impactKey, impIdx) => {
+          Object.keys(priceImpactData).forEach((impactKey /*, impIdx removed */) => {
             if (impactKey !== 'outlook') { // Skip outlook for now
               const detailId = `${impactId}-${impactKey}`;
-              const detailValue = (priceImpactData as any)[impactKey];
+              const detailValue = (priceImpactData as Record<string, string>)[impactKey];
               
               itemNodes.push({
                 id: detailId,
@@ -1526,15 +1526,15 @@ const generateItemViewDiagram = () => {
           });
           
           // Add outlook node if available
-          if (typeof priceImpactData === 'object' && priceImpactData !== null && 'outlook' in priceImpactData && typeof (priceImpactData as any).outlook === 'string') {
+          if (typeof priceImpactData === 'object' && priceImpactData !== null && 'outlook' in priceImpactData && typeof (priceImpactData as { outlook?: string }).outlook === 'string') {
             const outlookId = `${impactId}-outlook`;
             itemNodes.push({
               id: outlookId,
               type: 'output',
               data: { 
-                label: `Outlook: ${(priceImpactData as any).outlook}`,
+                label: `Outlook: ${(priceImpactData as { outlook?: string }).outlook}`,
                 keyword: `${category.label} Outlook`,
-                details: { outlook: (priceImpactData as any).outlook }
+                details: { outlook: (priceImpactData as { outlook?: string }).outlook }
               },
               position: { x: 0, y: 0 },
               style: {
@@ -1638,8 +1638,8 @@ export default function TariffDiagram() {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const { setSelectedTariffKeyword } = useSharedState();
 
-  const [highlightedNodeIds, setHighlightedNodeIds] = useState<string[]>([]);
-  const [highlightedEdgeIds, setHighlightedEdgeIds] = useState<string[]>([]);
+  // const [highlightedNodeIds, setHighlightedNodeIds] = useState<string[]>([]);
+  // const [highlightedEdgeIds, setHighlightedEdgeIds] = useState<string[]>([]);
   const [priceDisplay, setPriceDisplay] = useState<string>(INITIAL_PRICE_DISPLAY);
   
   // New state for detailed info panel
@@ -1680,8 +1680,8 @@ export default function TariffDiagram() {
     }
     
     // Reset any selections when changing view
-    setHighlightedNodeIds([]);
-    setHighlightedEdgeIds([]);
+    // setHighlightedNodeIds([]); // 주석 처리된 상태의 setter 호출도 주석 처리
+    // setHighlightedEdgeIds([]); // 주석 처리된 상태의 setter 호출도 주석 처리
     setSelectedTariffKeyword(null);
     setPriceDisplay(INITIAL_PRICE_DISPLAY);
     setSelectedNodeInfo(null);
@@ -1690,8 +1690,8 @@ export default function TariffDiagram() {
   }, [viewType, setNodes, setEdges, setSelectedTariffKeyword]);
 
   const resetHighlights = useCallback(() => {
-    setHighlightedNodeIds([]);
-    setHighlightedEdgeIds([]);
+    // setHighlightedNodeIds([]); // 주석 처리된 상태의 setter 호출도 주석 처리
+    // setHighlightedEdgeIds([]); // 주석 처리된 상태의 setter 호출도 주석 처리
     setSelectedTariffKeyword(null);
     setPriceDisplay(INITIAL_PRICE_DISPLAY);
     setSelectedNodeInfo(null);
@@ -1793,8 +1793,8 @@ export default function TariffDiagram() {
         (node.data.label && node.data.label.includes('Rate:'))
       )) {
         // Extract rate from the node label
-        let rateString = node.data.label;
-        const rateMatch = rateString.match(/\d+%/);
+        const rateString = node.data.label;
+        const rateMatch = rateString.match(/\\d+%/);
         
         if (rateMatch) {
           const rate = parseInt(rateMatch[0], 10);
@@ -1832,7 +1832,7 @@ export default function TariffDiagram() {
         );
       }
     },
-    [setSelectedTariffKeyword, resetHighlights, setNodes, setEdges, setSelectedNodeInfo, setShowDetailPanel]
+    [setSelectedTariffKeyword, resetHighlights, setNodes, setSelectedNodeInfo, setShowDetailPanel]
   );
 
   // Detail panel component - replace the existing DetailPanel with this improved version
