@@ -1999,6 +1999,7 @@ export default function TariffDiagram() {
           fitView
           attributionPosition="bottom-left"
           nodesDraggable={true}
+          panOnDrag={false} // 이 줄을 추가합니다.
           style={{ background: '#fcfcfc' }}
         >
           <MiniMap 
