@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "dagre": "^0.8.5",
     "fast-xml-parser": "^5.2.2",
     "next": "15.3.2",
     "papaparse": "^5.5.2",
@@ -19,6 +20,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/dagre": "^0.7.52",
     "@types/node": "^20",
     "@types/papaparse": "^5.3.16",
     "@types/react": "^19",

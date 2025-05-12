@@ -1,0 +1,367 @@
+{
+  "policy_name": "Trump 2025 Tariff Policy",
+  "effective_date": "2025-04-05",
+  "basic_tariff_structure": {
+    "global_base_tariff": {
+      "rate": "10%",
+      "effective_date": "2025-04-05",
+      "description": "Base tariff on all imports"
+    },
+    "country_specific_reciprocal_tariff": {
+      "rate": "11%-50%",
+      "effective_date": "2025-04-02",
+      "suspension": {
+        "is_suspended": true,
+        "suspension_period": "90 days",
+        "suspension_end_date": "2025-07-08",
+        "description": "Only 10% base tariff applied to many countries"
+      },
+      "description": "Reciprocal tariffs for trade deficit countries"
+    },
+    "china_special_tariff": {
+      "rate": "145%",
+      "components": {
+        "fentanyl_tariff": "20%",
+        "reciprocal_tariff": "125%"
+      },
+      "description": "Special tariff policy for China"
+    },
+    "usmca_special_rules": {
+      "usmca_compliant_products": "0%",
+      "usmca_noncompliant_products": "25%",
+      "description": "Tariffs based on USMCA requirements for Canada/Mexico"
+    }
+  },
+  "april_11th_exemption": {
+    "definition": "Policy exempting smartphones, computers, semiconductors, and other electronics from reciprocal tariffs.",
+    "applicable_products": [
+      {"item": "Smartphone", "HTSUS": "8517.13"},
+      {"item": "Computer/Laptop", "HTSUS": "8471"},
+      {"item": "Semiconductor Device", "HTSUS": "8542"},
+      {"item": "Memory Chip", "HTSUS": "8542"},
+      {"item": "Flat Panel Display", "HTSUS": null},
+      {"item": "Solar Cell", "HTSUS": null},
+      {"item": "Flash Drive", "HTSUS": null},
+      {"item": "Memory Card", "HTSUS": null},
+      {"item": "SSD Storage", "HTSUS": null}
+    ],
+    "benefits": [
+      "Exemption from 10% base tariff for most products imported from most countries",
+      "Exemption from high reciprocal tariffs (11-50%) for certain countries",
+      "For Chinese products, reciprocal tariffs are exempted but 20% fentanyl-related tariff remains"
+    ],
+    "main_beneficiary_countries": ["China", "Taiwan", "Korea", "Vietnam"],
+    "nature": "Temporary measure",
+    "future_plan": "Separate tariffs for semiconductors and electronics to be introduced in the coming months"
+  },
+  "regional_tariffs": {
+    "china": {
+      "base_tariff_rate": "145%",
+      "composition": {
+        "reciprocal_tariff": "125%",
+        "fentanyl_tariff": "20%"
+      },
+      "special_provisions": [
+        {
+          "category": "Electronics",
+          "applicable_items": ["Smartphones", "Computers", "Semiconductors"],
+          "tariff_rate": "20%",
+          "description": "April 11th exemption waives reciprocal tariff"
+        },
+        {
+          "category": "Solar Panels",
+          "applicable_items": ["Products from Chinese manufacturers in third countries"],
+          "tariff_rate": "41-3,521%",
+          "target_countries": ["Malaysia", "Cambodia", "Vietnam", "Thailand"]
+        },
+        {
+          "category": "De Minimis Exemption Removal",
+          "effective_date": "2025-05-02",
+          "description": "Small imports (under $800) also subject to tariffs"
+        }
+      ]
+    },
+    "canada_mexico": {
+      "usmca_compliant_products": "0%",
+      "usmca_noncompliant_products": "25%",
+      "canadian_usmca_noncompliant_energy_potassium": "10%",
+      "usmca_rules_of_origin": {
+        "automotive_industry": {
+          "north_american_content": "75%",
+          "additional_labor_value_requirement": "Minimum $16 per hour"
+        },
+        "raw_materials": "Substantial transformation within North America or specific regional content requirements"
+      }
+    },
+    "european_union": {
+      "base_tariff_rate": "20% reciprocal tariff",
+      "current_application": "Temporarily suspended to 10% base tariff",
+      "suspension_end_date": "2025-07-09",
+      "uk_special_agreement": {
+        "base_tariff": "10%",
+        "steel_aluminum": "Tariff exemption"
+      },
+      "retaliation_measures": {
+        "scale": "$22 billion",
+        "target": "US products",
+        "status": "Suspended for 90 days"
+      }
+    },
+    "other_major_trade_partners": {
+      "japan": {
+        "reciprocal_tariff": "24%",
+        "current_application": "Temporarily suspended to 10%",
+        "major_impact_sectors": "Auto exports"
+      },
+      "korea": {
+        "reciprocal_tariff": "25%",
+        "current_application": "Temporarily suspended to 10%",
+        "additional_info": "Negotiating tariff package with US as of April 25th"
+      },
+      "taiwan": {
+        "reciprocal_tariff": "32%",
+        "current_application": "Temporarily suspended to 10%",
+        "excluded_items": "Semiconductor products"
+      },
+      "vietnam": {
+        "reciprocal_tariff": "46%",
+        "current_application": "Temporarily suspended to 10%"
+      },
+      "india": {
+        "reciprocal_tariff": "26%",
+        "current_application": "Temporarily suspended to 10%"
+      },
+      "brazil": {
+        "reciprocal_tariff": "11%",
+        "current_application": "Temporarily suspended to 10%"
+      }
+    }
+  },
+  "us_content_tariff_application": {
+    "requirement": "Imported goods must contain at least 20% US content",
+    "benefit": "Tariff exemption on US portion, tariffs applied only to non-US portion",
+    "calculation_method": {
+      "basis": "Value of components produced entirely in US or underwent 'substantial transformation' in US",
+      "example": {
+        "product_price": "$100",
+        "us_content": "30%",
+        "tariff_applicable_portion": "$70",
+        "japan_import": {
+          "tariff_rate": "24%",
+          "tariff_amount": "$16.80",
+          "effective_tariff_rate": "16.8%"
+        }
+      }
+    },
+    "application_method": {
+      "claim_code": "HTSUS 9903.01.34",
+      "required_documentation": "Documents proving origin and value of US components"
+    }
+  },
+  "fentanyl_tariff": {
+    "definition": "Special tariff imposed on China, Canada, Mexico citing fentanyl and illegal drug inflow issues",
+    "legal_basis": "National emergency declaration under International Emergency Economic Powers Act (IEEPA)",
+    "implementation_timeline": {
+      "declaration_date": "2025-02-01",
+      "china_initial_tariff_date": "2025-02-04",
+      "canada_mexico_tariff_date": "2025-03-04",
+      "china_tariff_increase_date": "2025-03-04",
+      "reciprocal_tariff_integration_date": "2025-04-02"
+    },
+    "countries_and_rates": {
+      "china": {
+        "initial": "10%",
+        "current": "20%",
+        "additional": "Combined with reciprocal tariff for up to 145%"
+      },
+      "canada": {
+        "usmca_noncompliant_products": "25%",
+        "usmca_noncompliant_energy_potassium": "10%"
+      },
+      "mexico": {
+        "usmca_noncompliant_products": "25%"
+      }
+    },
+    "exemptions": [
+      "USMCA compliant products",
+      "Certain critical minerals",
+      "Specific technology products (after April 11th exemption)"
+    ]
+  },
+  "item_specific_tariffs": {
+    "automotive": {
+      "completed_vehicles_import": {
+        "tariff_rate": "25%",
+        "effective_date": "2025-04-03"
+      },
+      "auto_parts": {
+        "tariff_rate": "25%",
+        "effective_date": "2025-05-03"
+      },
+      "special_provisions": [
+        "US parts in vehicles imported from Canada/Mexico exempt from tariffs",
+        "Paying 25% tariff on imported vehicles exempts from other tariffs on steel/aluminum",
+        "USMCA compliant parts exempt from tariffs"
+      ]
+    },
+    "steel_aluminum": {
+      "steel_imports": {
+        "tariff_rate": "25%",
+        "effective_date": "2025-03-12"
+      },
+      "aluminum_imports": {
+        "tariff_rate": "25%",
+        "previous_rate": "10%",
+        "effective_date": "2025-03-12"
+      },
+      "empty_aluminum_cans_canned_beer": {
+        "tariff_rate": "25%",
+        "effective_date": "2025-04-02"
+      },
+      "requirements": {
+        "steel": "'Melted and poured' in the US",
+        "aluminum": "'Smelted and cast' in the US"
+      }
+    },
+    "electronics_technology": {
+      "smartphones_computers_other_electronics": {
+        "tariff": "Temporary exemption from reciprocal tariffs",
+        "announcement_date": "2025-04-11"
+      },
+      "applicable_htsus_categories": [
+        "8471", "8473.30", "8486", "8517.13.00",
+        "and 20 other codes"
+      ],
+      "chinese_products": "Exemption applies only to reciprocal tariffs; 20% fentanyl-related tariff remains",
+      "semiconductors": "Under additional tariff investigation, currently exempt from reciprocal tariffs"
+    },
+    "apparel_textiles": {
+      "tariff_rate": "Full reciprocal tariffs by country applied",
+      "price_impact": {
+        "clothing": "65% increase",
+        "footwear": "87% increase"
+      },
+      "retail_industry_outlook": "Clothing prices expected to rise minimum 30%"
+    },
+    "agricultural_products": {
+      "tariff_rate": "Full reciprocal tariffs by country applied",
+      "price_impact": {
+        "mexican_products": "Fruits/vegetables",
+        "canadian_products": "Feed/grain/meat",
+        "outlook": "Imported food prices expected to rise significantly"
+      },
+      "export_impact": "US agricultural exports hit by retaliatory tariffs from China (125%) and others"
+    },
+    "other_items": {
+      "pharmaceuticals": {
+        "tariff": "Exempt from reciprocal tariffs",
+        "additional_investigation": "Possible"
+      },
+      "copper": {
+        "tariff": "Exempt from reciprocal tariffs",
+        "investigation_completion_date": "2025-11-22"
+      },
+      "lumber": {
+        "tariff": "Exempt from reciprocal tariffs",
+        "investigation_completion_date": "2025-11-26"
+      },
+      "critical_minerals_energy_products": "Exempt from reciprocal tariffs",
+      "precious_metals": "Exempt from reciprocal tariffs",
+      "film_entertainment": {
+        "tariff": "100% tariff announced on 'foreign-made' films",
+        "implementation": "Pending"
+      },
+      "solar_panels": {
+        "chinese_factory_countries": "Minimum 41% tariff",
+        "cambodia": "3,521% tariff"
+      }
+    }
+  },
+  "industry_impacts": {
+    "electronics_industry": {
+      "price_impact": {
+        "mitigating_factors": "April 11th exemption reduces initial shock",
+        "base_tariffs": "Expected 5-10% price increases",
+        "high_value_products": "Premium products like Apple iPhone see moderated price increases"
+      },
+      "supply_chain_changes": {
+        "production_diversification": "Apple accelerating shift from China to India, Vietnam",
+        "disruption_effects": "Supply chain disruptions causing some manufacturers to pause shipments",
+        "us_transition": "White House notes companies 'shifting to US production as quickly as possible'"
+      },
+      "future_outlook": {
+        "special_tariffs": "Commerce Secretary mentioned 'special focused' tariffs on electronics coming within months",
+        "uncertainty": "Affecting investment decisions and inventory planning"
+      }
+    },
+    "automotive_industry": {
+      "price_impact": {
+        "imported_vehicles": "$2,000-$10,000 price increase per vehicle expected",
+        "goldman_sachs_outlook": "Forecasts $2,000-$4,000 price increases within 6-12 months",
+        "us_assembled_vehicles": "5-10% price increases due to imported parts"
+      },
+      "sales_outlook": {
+        "s_and_p_projection": "Estimated 700,000 fewer sales in 2025, 1.2 million in 2026",
+        "bcg_projection": "Industry costs expected to increase $11-16 billion annually"
+      },
+      "production_shifts": {
+        "gm": "Expanding Silverado and Sierra truck production at Indiana plant",
+        "stellantis": "Suspending production at Mexico, Canada plants; furloughing 900 workers at Michigan/Indiana plants",
+        "german_manufacturers": "Some companies like Audi, Volkswagen completely halting US imports"
+      }
+    },
+    "appliance_industry": {
+      "price_impact": {
+        "current_status": "Major manufacturers already implementing 3-7% price increases",
+        "overall_outlook": "Most appliances expected to see 8-25% price increases",
+        "refrigerators": {
+          "mexican_produced": "5-15% increase",
+          "chinese_produced": "5-20% increase"
+        }
+      },
+      "production_shifts": {
+        "us_production": "Companies like LG, Samsung accelerating US production capacity expansion",
+        "limitations": "Experts note complete transition to US production difficult",
+        "import_dependence": "US-made appliances still use significant imported components"
+      },
+      "consumer_behavior": {
+        "purchase_patterns": "Accelerated appliance purchases ahead of price increases",
+        "coping_strategies": "Retailers offering zero-interest financing to soften price shock"
+      }
+    },
+    "apparel_textile_industry": {
+      "price_impact": {
+        "yale_projection": "Clothing prices expected to rise 64% short-term, 27% long-term",
+        "vulnerability": "Particularly vulnerable as 97-99% of US clothing is imported",
+        "major_supplier_tariffs": "China (34%), Vietnam (46%), Bangladesh (37%)"
+      },
+      "sourcing_shifts": {
+        "production_relocation": "Brands exploring production shifts but difficult to replace China's scale and infrastructure",
+        "us_production": "Experts note US domestic production shift unrealistic due to lack of skilled labor, infrastructure"
+      },
+      "retailer_strategies": {
+        "cost_sharing": "Negotiating tariff cost sharing with suppliers",
+        "inventory_planning": "Adjusting inventory plans to focus on bestsellers",
+        "pricing_strategy": "Using targeted promotions rather than across-the-board price increases"
+      }
+    },
+    "agricultural_industry": {
+      "food_prices": {
+        "import_scale": "US imports about $200 billion in food, beverages, feed (primarily from Canada, Mexico, China)",
+        "mexican_imports": "Fresh fruits and vegetables representing 23% of US agricultural imports",
+        "canadian_imports": "Specialty items and ingredients representing 19% of US agricultural imports"
+      },
+      "farm_input_costs": {
+        "fertilizer": "85% of potash fertilizer used by US farmers comes from Canada",
+        "tariff_adjustment": "Potash tariff reduced from 25% to 10% after industry pushback",
+        "equipment_costs": "Steel/aluminum tariffs increasing costs for farm machinery and infrastructure"
+      },
+      "export_impact": {
+        "china": "Imposing 15% retaliatory tariffs on US agricultural products",
+        "canada": "Implementing 25% tariffs on $20.6 billion worth of US products",
+        "industry_damage": "Farm Transportation Coalition reporting 'massive financial losses' and order cancellations",
+        "value_decline": "Some agricultural exports seeing value declines of up to 20%"
+      }
+    }
+  }
+} 
