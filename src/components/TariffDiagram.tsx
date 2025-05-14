@@ -980,14 +980,15 @@ interface DetailedNodeInfo {
 }
 
 export default function TariffDiagram() {
-  const [viewType, setViewType] = useState<ViewType>('policy');
-  const { setSelectedTariffKeyword } = useSharedState();
-  const [selectedNodeInfo, setSelectedNodeInfo] = useState<DetailedNodeInfo | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const graphRef = useRef<TreeGraph | null>(null);
+  const [viewType, setViewType] = useState<ViewType>('policy');
+  const [selectedNodeInfo, setSelectedNodeInfo] = useState<DetailedNodeInfo | null>(null);
+  const { setSelectedTariffKeyword } = useSharedState();
   const [isMobile, setIsMobile] = useState(false);
+  const [showGuide, setShowGuide] = useState(true);
 
-  // Detect mobile screen
+  // Check if device is mobile
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -1000,6 +1001,20 @@ export default function TariffDiagram() {
       window.removeEventListener('resize', checkMobile);
     };
   }, []);
+
+  // Save showGuide state in localStorage
+  useEffect(() => {
+    // Load the guide state from localStorage on initial render
+    const savedGuideState = localStorage.getItem('diagramGuideShown');
+    if (savedGuideState === 'false') {
+      setShowGuide(false);
+    }
+  }, []);
+
+  // Update localStorage when showGuide changes
+  useEffect(() => {
+    localStorage.setItem('diagramGuideShown', showGuide.toString());
+  }, [showGuide]);
 
   useEffect(() => {
     // Register G6 when component mounts
@@ -1307,29 +1322,59 @@ export default function TariffDiagram() {
   };
 
   // Diagram usage guide component
-  const DiagramGuide = () => (
-    <div style={{
-      position: 'absolute',
-      left: isMobile ? '10px' : '20px',
-      bottom: isMobile ? '10px' : '20px',
-      padding: isMobile ? '6px 10px' : '8px 12px',
-      backgroundColor: 'rgba(255,255,255,0.9)',
-      borderRadius: '4px',
-      border: '1px solid #ddd',
-      fontSize: isMobile ? '11px' : '13px',
-      color: '#666',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-      maxWidth: isMobile ? '200px' : '250px'
-    }}>
-      <p style={{ margin: '0 0 5px 0', fontWeight: 'bold' }}>How to use this diagram:</p>
-      <ul style={{ margin: '0', paddingLeft: '20px' }}>
-        <li>Drag canvas to move</li>
-        <li>Use mouse wheel to zoom in/out</li>
-        <li>Click a node to view details</li>
-        {isMobile && <li>Use two-finger gestures to zoom</li>}
-      </ul>
-    </div>
-  );
+  const DiagramGuide = () => {
+    if (!showGuide) return null;
+    
+    return (
+      <div style={{
+        position: 'absolute',
+        left: isMobile ? '10px' : '20px',
+        bottom: isMobile ? '10px' : '20px',
+        padding: isMobile ? '6px 10px' : '8px 12px',
+        backgroundColor: 'rgba(255,255,255,0.9)',
+        borderRadius: '4px',
+        border: '1px solid #ddd',
+        fontSize: isMobile ? '11px' : '13px',
+        color: '#666',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        maxWidth: isMobile ? '200px' : '250px'
+      }}>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          marginBottom: '5px'
+        }}>
+          <p style={{ margin: '0', fontWeight: 'bold' }}>How to use this diagram:</p>
+          <button 
+            onClick={() => setShowGuide(false)}
+            style={{ 
+              background: 'none', 
+              border: 'none', 
+              cursor: 'pointer', 
+              fontSize: '14px',
+              color: '#666',
+              padding: '0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '20px',
+              height: '20px'
+            }}
+            aria-label="Close guide"
+          >
+            ✕
+          </button>
+        </div>
+        <ul style={{ margin: '0', paddingLeft: '20px' }}>
+          <li>Drag canvas to move</li>
+          <li>Use mouse wheel to zoom in/out</li>
+          <li>Click a node to view details</li>
+          {isMobile && <li>Use two-finger gestures to zoom</li>}
+        </ul>
+      </div>
+    );
+  };
 
   // Container styles
   const containerStyles = {
