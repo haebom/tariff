@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useSharedState } from '@/context/AppContext';
-import G6, { TreeGraph, INode, NodeConfig, ShapeStyle, TreeGraphData, ModelConfig, IGroup, IShape } from '@antv/g6';
+import G6, { TreeGraph, INode, ShapeStyle, TreeGraphData, ModelConfig, IGroup, IShape } from '@antv/g6';
 import tariffPolicyDataJson from '@/data/tariffPolicyEn.json';
 const tariffPolicyData: TariffPolicy = tariffPolicyDataJson;
 
@@ -305,7 +305,7 @@ interface IndustryImpacts {
   agricultural_industry: IndustryImpactDetail;
 }
 
-// G6용 트리 데이터 인터페이스 정의
+// Tree data interface definition for G6
 interface G6TreeNode extends TreeGraphData {
   id: string;
   label: string;
@@ -316,13 +316,13 @@ interface G6TreeNode extends TreeGraphData {
     style?: ShapeStyle;
   };
   keyword?: string;
-  details?: unknown;  // any 대신 unknown 사용
+  details?: unknown;  // using unknown instead of any
 }
 
-// 기존 타입을 Record<string, unknown>으로 변환하는 대신 unknown으로 캐스팅
+// Using specific font weight type for G6
 type G6FontWeight = 'normal' | 'bold' | 'bolder' | 'lighter' | number;
 
-// G6 이벤트 객체 타입 정의
+// G6 event object type definition
 interface G6Event {
   item: INode;
   target: unknown;
@@ -331,9 +331,6 @@ interface G6Event {
   canvasX: number;
   canvasY: number;
 }
-
-// 초기 노드와 엣지 정의 부분은 유지 (데이터 변환에 사용할 수 있음)
-// ... 기존 initialNodes 및 initialEdges 유지 ...
 
 // G6 Tree 데이터 생성 함수 - Policy View
 const generatePolicyViewData = (): G6TreeNode => {
@@ -722,7 +719,7 @@ const generateCountryViewData = (): G6TreeNode => {
     children: []
   };
 
-  // 주요 국가/지역 노드 추가
+  // Add nodes for major countries/regions
   const countries = [
     { id: 'china', label: 'China', data: tariffPolicyData.regional_tariffs.china },
     { id: 'canada-mexico', label: 'Canada/Mexico', data: tariffPolicyData.regional_tariffs.canada_mexico },
@@ -741,9 +738,9 @@ const generateCountryViewData = (): G6TreeNode => {
       children: []
     };
 
-    // 국가별 자식 노드 추가 (기존 코드에서 변환)
+    // Add child nodes for each country (transform from existing code)
     if (country.id === 'china') {
-      // 중국 데이터는 명시적으로 타입 지정
+      // Explicitly type China data
       const chinaData = country.data as ChinaRegionalTariff;
       
       if (chinaData.base_tariff_rate) {
@@ -752,7 +749,7 @@ const generateCountryViewData = (): G6TreeNode => {
           id: `${countryNode.id}-base-tariff`,
           label: `Base Tariff: ${chinaData.base_tariff_rate}`,
           keyword: 'China Base Tariff',
-          details: chinaData as unknown,  // unknown으로 캐스팅
+          details: chinaData as unknown,  // cast to unknown
           style: {
             fill: '#5D70B4',
             stroke: '#5D70B4',
@@ -765,13 +762,13 @@ const generateCountryViewData = (): G6TreeNode => {
         });
       }
       
-      // 특별 조항 추가
+      // Add special provisions
       if (chinaData.special_provisions && Array.isArray(chinaData.special_provisions)) {
         chinaData.special_provisions.forEach((provision: ChinaSpecialProvision, idx: number) => {
           const provisionNode: G6TreeNode = {
             id: `${countryNode.id}-provision-${idx}`,
             label: provision.category,
-            details: provision as unknown,  // unknown으로 캐스팅
+            details: provision as unknown,  // cast to unknown
             style: {
               fill: '#f4f4f4',
               stroke: '#ddd',
@@ -783,7 +780,7 @@ const generateCountryViewData = (): G6TreeNode => {
               id: `${provisionNode.id}-rate`,
               label: `Tariff: ${provision.tariff_rate}`,
               keyword: `China ${provision.category} Tariff`,
-              details: provision as unknown,  // unknown으로 캐스팅
+              details: provision as unknown,  // cast to unknown
               style: {
                 fill: '#82D0D4',
                 stroke: '#82D0D4',
@@ -802,9 +799,9 @@ const generateCountryViewData = (): G6TreeNode => {
       }
     }
     
-    // ... 다른 국가들에 대한 데이터 변환 로직도 필요에 따라 추가 ...
+    // ... additional data transformation logic for other countries as needed ...
     
-    // 루트 노드에 국가 노드 추가
+    // Add country node to root node
     rootNode.children?.push(countryNode);
   });
 
@@ -867,7 +864,7 @@ const generateItemViewData = (): G6TreeNode => {
   return rootNode;
 };
 
-// 뷰 타입 선택 컴포넌트
+// View type selector component
 const ViewTypeSelector = ({ viewType, setViewType }: { viewType: ViewType, setViewType: (type: ViewType) => void }) => {
   return (
     <div style={{ 
@@ -875,7 +872,7 @@ const ViewTypeSelector = ({ viewType, setViewType }: { viewType: ViewType, setVi
       justifyContent: 'center', 
       marginBottom: '20px',
       gap: '10px',
-      flexWrap: 'wrap' // 모바일에서 버튼이 줄바꿈되도록 설정
+      flexWrap: 'wrap' // Allow buttons to wrap on mobile
     }}>
       <button 
         onClick={() => setViewType('policy')}
@@ -888,7 +885,7 @@ const ViewTypeSelector = ({ viewType, setViewType }: { viewType: ViewType, setVi
           cursor: 'pointer',
           fontWeight: viewType === 'policy' ? 'bold' : 'normal',
           boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-          margin: '4px' // 모바일에서 버튼 간 여백
+          margin: '4px' // Margin for mobile spacing
         }}
       >
         Policy View
@@ -904,7 +901,7 @@ const ViewTypeSelector = ({ viewType, setViewType }: { viewType: ViewType, setVi
           cursor: 'pointer',
           fontWeight: viewType === 'country' ? 'bold' : 'normal',
           boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-          margin: '4px' // 모바일에서 버튼 간 여백
+          margin: '4px' // Margin for mobile spacing
         }}
       >
         By Country
@@ -920,7 +917,7 @@ const ViewTypeSelector = ({ viewType, setViewType }: { viewType: ViewType, setVi
           cursor: 'pointer',
           fontWeight: viewType === 'item' ? 'bold' : 'normal',
           boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-          margin: '4px' // 모바일에서 버튼 간 여백
+          margin: '4px' // Margin for mobile spacing
         }}
       >
         By Product
@@ -929,7 +926,7 @@ const ViewTypeSelector = ({ viewType, setViewType }: { viewType: ViewType, setVi
   );
 };
 
-// 세부 정보 패널 인터페이스
+// Detail panel interface
 interface DetailedNodeInfo {
   title: string;
   description?: string;
@@ -947,7 +944,7 @@ export default function TariffDiagram() {
   const graphRef = useRef<TreeGraph | null>(null);
   const [isMobile, setIsMobile] = useState(false);
 
-  // 모바일 화면 감지
+  // Detect mobile screen
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -962,15 +959,15 @@ export default function TariffDiagram() {
   }, []);
 
   useEffect(() => {
-    // 컴포넌트가 마운트될 때 G6 등록
+    // Register G6 when component mounts
     if (!containerRef.current) return;
     
-    // 모바일 장치 지원을 위한 기본 설정
+    // Basic settings for mobile device support
     G6.registerNode(
       'rect-node',
       {
         draw(cfg: ModelConfig, group: IGroup): IShape {
-          if (!cfg || !group) return group.addShape('rect', { attrs: {x: 0, y: 0, width: 0, height: 0 }}); // 기본 도형 반환
+          if (!cfg || !group) return group.addShape('rect', { attrs: {x: 0, y: 0, width: 0, height: 0 }}); // Return default shape
           
           const style = cfg.style || {};
           const labelCfg = (cfg.labelCfg as { style?: ShapeStyle } || {});
@@ -995,7 +992,7 @@ export default function TariffDiagram() {
             name: 'rect-node-keyshape',
           });
           
-          // 텍스트 추가
+          // Add text
           const labelStyle = labelCfg.style || {};
           group.addShape('text', {
             attrs: {
@@ -1027,11 +1024,11 @@ export default function TariffDiagram() {
     };
   }, []);
 
-  // 뷰 타입에 따라 G6 트리 다이어그램 업데이트
+  // Update G6 tree diagram based on view type
   useEffect(() => {
     if (!containerRef.current) return;
     
-    // 현재 뷰 타입에 따라 데이터 생성
+    // Generate data based on current view type
     let treeData: G6TreeNode;
     if (viewType === 'policy') {
       treeData = generatePolicyViewData();
@@ -1041,18 +1038,18 @@ export default function TariffDiagram() {
       treeData = generateItemViewData();
     }
     
-    // 기존 그래프가 있으면 제거
+    // Remove existing graph
     if (graphRef.current) {
       graphRef.current.destroy();
     }
     
-    // 컨테이너 너비 계산
+    // Calculate container width
     const container = containerRef.current;
     const width = container.clientWidth;
-    // 모바일에서는 높이를 줄임
+    // Reduce height on mobile
     const height = isMobile ? 450 : 600;
     
-    // 새 그래프 인스턴스 생성
+    // Create new graph instance
     graphRef.current = new G6.TreeGraph({
       container: container,
       width,
@@ -1103,12 +1100,12 @@ export default function TariffDiagram() {
       },
       fitView: true,
       animate: true,
-      // 모바일에서는 작게 시작
+      // Start smaller on mobile
       minZoom: isMobile ? 0.3 : 0.5,
       maxZoom: 2,
     });
     
-    // 노드 클릭 이벤트 처리
+    // Handle node click events
     graphRef.current.on('node:click', (e: G6Event) => {
       const nodeModel = e.item.getModel() as G6TreeNode;
       if (nodeModel.keyword) {
@@ -1119,7 +1116,7 @@ export default function TariffDiagram() {
         
         if (nodeModel.details) {
           if (typeof nodeModel.details === 'object' && nodeModel.details !== null) {
-            // 명시적으로 object 타입 체크 및 null 체크 추가
+            // Explicitly check object type and null
             const detailsObj = nodeModel.details as Record<string, unknown>;
             description = (detailsObj.description as string) || '';
             
@@ -1140,17 +1137,17 @@ export default function TariffDiagram() {
       }
     });
     
-    // 데이터 로드 및 렌더링
+    // Load and render data
     graphRef.current.data(treeData);
     graphRef.current.render();
     graphRef.current.fitView();
     
-    // 모바일에서는 초기 줌 레벨 조정
+    // Adjust initial zoom level on mobile
     if (isMobile) {
       graphRef.current.zoomTo(0.5);
     }
     
-    // 창 크기 변경 대응
+    // Handle window resize
     const handleResize = () => {
       if (!containerRef.current || !graphRef.current) return;
       const container = containerRef.current;
@@ -1167,7 +1164,7 @@ export default function TariffDiagram() {
     };
   }, [viewType, setSelectedTariffKeyword, isMobile]);
 
-  // 세부 정보 패널 컴포넌트
+  // Detail panel component
   const DetailPanel = () => {
     if (!selectedNodeInfo) return null;
     
@@ -1266,7 +1263,7 @@ export default function TariffDiagram() {
     );
   };
 
-  // 다이어그램 사용 안내 컴포넌트
+  // Diagram usage guide component
   const DiagramGuide = () => (
     <div style={{
       position: 'absolute',
@@ -1281,17 +1278,17 @@ export default function TariffDiagram() {
       boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
       maxWidth: isMobile ? '200px' : '250px'
     }}>
-      <p style={{ margin: '0 0 5px 0', fontWeight: 'bold' }}>다이어그램 사용법:</p>
+      <p style={{ margin: '0 0 5px 0', fontWeight: 'bold' }}>How to use this diagram:</p>
       <ul style={{ margin: '0', paddingLeft: '20px' }}>
-        <li>캔버스를 드래그하여 이동</li>
-        <li>마우스 휠로 확대/축소</li>
-        <li>노드를 클릭하면 세부 정보 표시</li>
-        {isMobile && <li>두 손가락 제스처로 확대/축소</li>}
+        <li>Drag canvas to move</li>
+        <li>Use mouse wheel to zoom in/out</li>
+        <li>Click a node to view details</li>
+        {isMobile && <li>Use two-finger gestures to zoom</li>}
       </ul>
     </div>
   );
 
-  // 컨테이너 스타일
+  // Container styles
   const containerStyles = {
     width: '100%',
     height: isMobile ? '600px' : '800px',
@@ -1323,7 +1320,7 @@ export default function TariffDiagram() {
           position: 'relative'
         }}
       >
-        {/* G6 트리 그래프가 이 컨테이너에 렌더링됨 */}
+        {/* G6 tree graph will be rendered in this container */}
       </div>
       
       <DiagramGuide />
