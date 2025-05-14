@@ -11,6 +11,7 @@
   "dependencies": {
     "@antv/g6": "^4.8.23",
     "@vercel/analytics": "^1.5.0",
+    "@vercel/kv": "^3.0.0",
     "dagre": "^0.8.5",
     "fast-xml-parser": "^5.2.2",
     "next": "15.3.2",

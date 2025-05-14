@@ -332,7 +332,7 @@ interface G6Event {
   canvasY: number;
 }
 
-// G6 Tree 데이터 생성 함수 - Policy View
+// G6 Tree data generation function - Policy View
 const generatePolicyViewData = (): G6TreeNode => {
   return {
     id: 'root',
@@ -694,7 +694,50 @@ const generatePolicyViewData = (): G6TreeNode => {
   };
 };
 
-// G6 Tree 데이터 생성 함수 - Country View
+// Added TariffCalculationExample component to show $100 tariff calculation example
+const TariffCalculationExample = () => {
+  return (
+    <div style={{
+      position: 'absolute',
+      right: '20px',
+      bottom: '20px',
+      padding: '15px',
+      backgroundColor: 'rgba(255,255,255,0.95)',
+      borderRadius: '8px',
+      border: '1px solid #ddd',
+      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+      maxWidth: '300px',
+      fontSize: '14px'
+    }}>
+      <h4 style={{ margin: '0 0 10px 0', color: '#333' }}>Tariff Calculation Example:</h4>
+      <div style={{ marginBottom: '10px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee', paddingBottom: '5px', marginBottom: '5px' }}>
+          <strong>Product value:</strong> <span>$100.00</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee', paddingBottom: '5px', marginBottom: '5px' }}>
+          <strong>US content (30%):</strong> <span>$30.00</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee', paddingBottom: '5px', marginBottom: '5px' }}>
+          <strong>Non-US content (70%):</strong> <span>$70.00</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee', paddingBottom: '5px', marginBottom: '5px' }}>
+          <strong>Tariff rate:</strong> <span>25%</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed #5D70B4', paddingBottom: '5px', marginBottom: '5px' }}>
+          <strong>Tariff applied to:</strong> <span>$70.00</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: '#5D70B4', fontSize: '16px' }}>
+          <strong>Total tariff:</strong> <span>$17.50</span>
+        </div>
+      </div>
+      <p style={{ margin: '10px 0 0 0', fontSize: '12px', color: '#666', fontStyle: 'italic' }}>
+        Note: US content portion is exempt from tariff when it exceeds 20% of the total value.
+      </p>
+    </div>
+  );
+};
+
+// Function to generate country view data
 const generateCountryViewData = (): G6TreeNode => {
   if (!tariffPolicyData.regional_tariffs) {
     console.error('No regional tariffs data found');
@@ -808,7 +851,7 @@ const generateCountryViewData = (): G6TreeNode => {
   return rootNode;
 };
 
-// G6 Tree 데이터 생성 함수 - Item View
+// Function to generate item view data
 const generateItemViewData = (): G6TreeNode => {
   if (!tariffPolicyData.item_specific_tariffs) {
     console.error('No item specific tariffs data found');
@@ -1325,6 +1368,7 @@ export default function TariffDiagram() {
       
       <DiagramGuide />
       {selectedNodeInfo && <DetailPanel />}
+      <TariffCalculationExample />
     </div>
   );
 } 

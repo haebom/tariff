@@ -16,7 +16,6 @@ export default function HSSearchSidebar() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [displayData, setDisplayData] = useState<HSData[]>([]);
-  const [chartData, setChartData] = useState({ count: 0, total: 0 });
   const { selectedTariffKeyword } = useSharedState();
 
   // sections 변수 사용 (임시 - 추후 UI에 실제 사용)
@@ -99,36 +98,7 @@ export default function HSSearchSidebar() {
   useEffect(() => {
     const filteredData = filterData();
     setDisplayData(filteredData.slice(0, MAX_TABLE_ROWS));
-    
-    // Update chart data
-    const baseTotal = selectedSection ? hsData.filter(item => item.section === selectedSection).length : hsData.length;
-    setChartData({ count: filteredData.length, total: baseTotal > 0 ? baseTotal : 1 });
   }, [filterData, hsData, selectedSection]);
-
-  // Canvas chart
-  useEffect(() => {
-    const canvas = document.getElementById('hs-chart-canvas') as HTMLCanvasElement;
-    if (canvas && chartData.total > 0) {
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        const canvasWidth = canvas.width;
-        const canvasHeight = canvas.height;
-        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-
-        const barWidth = (chartData.count / chartData.total) * canvasWidth;
-        
-        const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--tw-color-blue-500') || '#3b82f6';
-        const fgColor = getComputedStyle(document.documentElement).getPropertyValue('--foreground') || '#e0e0e0';
-
-        ctx.fillStyle = accentColor;
-        ctx.fillRect(0, 0, barWidth, canvasHeight - 15); 
-        
-        ctx.fillStyle = fgColor;
-        ctx.font = '12px Arial';
-        ctx.fillText(`Results: ${chartData.count} / ${chartData.total}`, 5, canvasHeight - 5);
-      }
-    }
-  }, [chartData]);
 
   const tableHeaders = ['HS Code', 'Description', 'Section', 'Level'];
 
@@ -260,7 +230,6 @@ export default function HSSearchSidebar() {
           </tbody>
         </table>
       </div>
-      <canvas id="hs-chart-canvas" className="hs-chart w-full h-12 mt-4 flex-shrink-0" width="200" height="50"></canvas> 
     </aside>
   );
 } 
