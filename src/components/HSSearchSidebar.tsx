@@ -1,10 +1,10 @@
 'use client'; // This component will have client-side interactions (state, event handlers)
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { getHSSections, getHSData, HSSection, HSData } from '../lib/dataHandler'; // 수정된 임포트
-import { useSharedState } from '@/context/AppContext'; // 공유 컨텍스트 import
+import { getHSSections, getHSData, HSSection, HSData } from '../lib/dataHandler'; // Modified import
+import { useSharedState } from '@/context/AppContext'; // Import shared context
 
-// HSSearchSidebarProps는 이제 필요 없을 수 있습니다.
+// HSSearchSidebarProps may no longer be needed
 
 const MAX_TABLE_ROWS = 50;
 
@@ -18,21 +18,21 @@ export default function HSSearchSidebar() {
   const [displayData, setDisplayData] = useState<HSData[]>([]);
   const { selectedTariffKeyword } = useSharedState();
 
-  // sections 변수 사용 (임시 - 추후 UI에 실제 사용)
+  // Use sections variable (temporary - will be actually used in UI later)
   // useEffect(() => {
   //   if (sections.length > 0) {
   //     console.log("HS Sections loaded:", sections.length);
   //   }
-  // }, [sections]); // 이 부분은 실제 Sections UI가 사용되면 자연스럽게 해결되므로 일단 주석 처리
+  // }, [sections]); // This part is commented out as it will naturally be resolved when Sections UI is used
 
-  // 다이어그램에서 선택된 키워드가 변경되면 searchTerm 업데이트
+  // Update searchTerm when the selected keyword changes in the diagram
   useEffect(() => {
     if (selectedTariffKeyword) {
-      // 여기서는 간단히 searchTerm을 변경하지만, 더 복잡한 필터링 로직을 적용할 수도 있습니다.
-      // 예를 들어, 키워드를 분석하여 특정 HS 코드 패턴이나 설명 내용을 검색하도록 할 수 있습니다.
+      // Here we simply change the searchTerm, but more complex filtering logic could be applied.
+      // For example, analyzing the keyword to search for specific HS code patterns or description content.
       setSearchTerm(selectedTariffKeyword); 
     }
-    // 선택된 키워드가 null이 되면 (예: 다이어그램 외부 클릭 또는 초기화 시) 검색어를 초기화할 수도 있습니다.
+    // When the selected keyword becomes null (e.g., clicking outside the diagram or reset), we could reset the search term.
     // else {
     //   setSearchTerm(''); 
     // }
@@ -102,7 +102,7 @@ export default function HSSearchSidebar() {
 
   const tableHeaders = ['HS Code', 'Description', 'Section', 'Level'];
 
-  // Tailwind CSS를 사용한 스타일링 추가
+  // Added styling using Tailwind CSS
   const asideClasses = "sidebar p-4 border-gray-300 dark:border-gray-700 flex flex-col h-full"; 
   const inputClasses = "w-full p-2 mb-4 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400";
   const tableContainerClasses = "hs-table-container overflow-auto flex-grow"; 
@@ -179,7 +179,7 @@ export default function HSSearchSidebar() {
       
       <div className={tableContainerClasses}>
         <table className={tableClasses}>
-          <thead className="sticky top-0 bg-gray-50 dark:bg-gray-700 z-10"> {/* 테이블 헤더 고정 */} 
+          <thead className="sticky top-0 bg-gray-50 dark:bg-gray-700 z-10"> {/* Fixed table header */} 
             <tr>
               {tableHeaders.map((header, index) => (
                 <th key={index} className={thClasses}>{header}</th>

@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-// 관세 관련 키워드 목록
+// List of tariff-related keywords
 export const TARIFF_KEYWORDS = [
   'tariff', 
   'trade war', 
@@ -17,7 +17,7 @@ export const TARIFF_KEYWORDS = [
   'section 301'
 ];
 
-// RSS 피드 URL 리스트
+// List of RSS feed URLs
 export const RSS_FEEDS = [
   'https://news.google.com/rss/search?q=tariff+policy+Trump+2025',
   'https://news.google.com/rss/search?q=China+US+tariff',
@@ -26,7 +26,7 @@ export const RSS_FEEDS = [
   'https://news.google.com/rss/headlines/section/topic/BUSINESS'
 ];
 
-// URL이나 콘텐츠를 기반으로 고유 ID 생성
+// Generate unique ID based on URL or content
 export function createHash(input: string): string {
   return crypto
     .createHash('md5')
@@ -34,7 +34,7 @@ export function createHash(input: string): string {
     .digest('hex');
 }
 
-// 콘텐츠가 관세 관련인지 확인
+// Check if content is tariff-related
 export function isTariffRelated(title: string, content?: string): boolean {
   const textToCheck = `${title} ${content || ''}`.toLowerCase();
   
@@ -43,7 +43,7 @@ export function isTariffRelated(title: string, content?: string): boolean {
   );
 }
 
-// Google News RSS 항목에서 제목과 출처 추출
+// Extract title and source from Google News RSS item
 export function extractTitleAndSource(fullTitle: string): { title: string, source: string } {
   const parts = fullTitle.split(' - ');
   
@@ -56,19 +56,19 @@ export function extractTitleAndSource(fullTitle: string): { title: string, sourc
   return { title: fullTitle, source: 'Unknown Source' };
 }
 
-// 날짜 범위 내의 모든 날짜 생성 (YYYY-MM-DD 형식)
+// Generate all dates within a range (in YYYY-MM-DD format)
 export function getDatesInRange(startDate: string, endDate: string): string[] {
   const dates: string[] = [];
   
   const start = new Date(startDate);
   const end = new Date(endDate);
   
-  // 종료일이 시작일보다 이전이면 빈 배열 반환
+  // Return empty array if end date is before start date
   if (end < start) {
     return dates;
   }
   
-  // 모든 날짜 생성
+  // Generate all dates
   const currentDate = new Date(start);
   while (currentDate <= end) {
     dates.push(currentDate.toISOString().split('T')[0]);

@@ -19,12 +19,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     let newsIds: string[] = [];
     
-    // 소스별 필터링
+    // Filter by source
     if (source) {
       const sourceKey = source.toLowerCase().replace(/\s+/g, '-');
       newsIds = await kv.smembers(`news:source:${sourceKey}`);
     } 
-    // 날짜 범위 필터링
+    // Filter by date range
     else if (startDate && endDate) {
       const dates = getDatesInRange(startDate, endDate);
       for (const date of dates) {
@@ -32,12 +32,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         newsIds.push(...dateIds);
       }
     } 
-    // 기본: 전체 뉴스 조회 (최신순)
+    // Default: Retrieve all news (in reverse chronological order)
     else {
       newsIds = await kv.zrange('news:all', 0, -1, { rev: true });
     }
     
-    // 검색어 필터링
+    // Filter by search query
     if (query) {
       const items: NewsItem[] = [];
       for (const id of newsIds) {
@@ -50,18 +50,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       }
       
-      // 검색 결과에서 ID 목록 추출
+      // Extract ID list from search results
       newsIds = items.map(item => item.id);
     }
     
-    // 페이지네이션
+    // Pagination
     const total = newsIds.length;
     const totalPages = Math.ceil(total / limitNum);
     const start = (pageNum - 1) * limitNum;
     const end = Math.min(start + limitNum - 1, total - 1);
     const paginatedIds = end >= 0 ? newsIds.slice(start, end + 1) : [];
     
-    // 데이터 조회
+    // Retrieve data
     const items: NewsItem[] = [];
     for (const id of paginatedIds) {
       const item = await kv.get(id) as NewsItem | null;

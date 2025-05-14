@@ -343,7 +343,7 @@ const generatePolicyViewData = (): G6TreeNode => {
       radius: 4,
     },
     labelCfg: {
-      style: {
+      style: { 
         fill: 'white',
         fontSize: 16,
         fontWeight: 'bold',
@@ -353,7 +353,7 @@ const generatePolicyViewData = (): G6TreeNode => {
       {
         id: 'china',
         label: 'China',
-        style: {
+          style: {
           fill: '#fff',
           stroke: '#ccc',
         },
@@ -370,12 +370,12 @@ const generatePolicyViewData = (): G6TreeNode => {
                 id: 'china-a1-yes',
                 label: '20% Fentanyl Tariff',
                 keyword: 'China Fentanyl Tariff',
-                style: {
+              style: {
                   fill: '#82D0D4',
                   stroke: '#82D0D4',
                 },
                 labelCfg: {
-                  style: {
+          style: {
                     fill: 'black',
                   },
                 },
@@ -384,12 +384,12 @@ const generatePolicyViewData = (): G6TreeNode => {
                 id: 'china-a1-no',
                 label: '145% Tariff',
                 keyword: 'China 145% Tariff',
-                style: {
+          style: {
                   fill: '#5D70B4',
                   stroke: '#5D70B4',
                 },
                 labelCfg: {
-                  style: {
+          style: {
                     fill: 'white',
                   },
                 },
@@ -398,16 +398,16 @@ const generatePolicyViewData = (): G6TreeNode => {
                     id: 'china-a1-temp-us',
                     label: '30% Tariff (90 days, US→China)',
                     keyword: 'US to China 30% Tariff 90 days',
-                    details: { 
+              details: { 
                       description: 'US and China agreed in June 2025 to significantly reduce tariffs for 90 days. The US reduced tariffs on Chinese imports from 145% to 30% for a 90-day period.' 
-                    },
-                    style: {
+            },
+            style: {
                       fill: '#FFD700',
                       stroke: '#5D70B4',
                       lineDash: [4, 2],
                     },
                     labelCfg: {
-                      style: {
+          style: {
                         fill: 'black',
                       },
                     },
@@ -416,10 +416,10 @@ const generatePolicyViewData = (): G6TreeNode => {
                     id: 'china-a1-temp-cn',
                     label: '10% Tariff (90 days, China→US)',
                     keyword: 'China to US 10% Tariff 90 days',
-                    details: { 
+              details: { 
                       description: 'China also reduced tariffs on US imports from 125% to 10% for a 90-day period.'
-                    },
-                    style: {
+            },
+            style: {
                       fill: '#FFD700',
                       stroke: '#5D70B4',
                       lineDash: [4, 2],
@@ -477,7 +477,7 @@ const generatePolicyViewData = (): G6TreeNode => {
       {
         id: 'can-mex',
         label: 'Canada/Mexico',
-        style: {
+            style: { 
           fill: '#fff',
           stroke: '#ccc',
         },
@@ -485,7 +485,7 @@ const generatePolicyViewData = (): G6TreeNode => {
           {
             id: 'canmex-q1',
             label: 'USMCA Compliant?',
-            style: {
+              style: {
               fill: '#f4f4f4',
               stroke: '#ddd',
             },
@@ -494,7 +494,7 @@ const generatePolicyViewData = (): G6TreeNode => {
                 id: 'canmex-a1-yes',
                 label: 'No Tariffs',
                 keyword: 'Canada/Mexico USMCA No Tariffs',
-                style: {
+              style: {
                   fill: '#82D0D4',
                   stroke: '#82D0D4',
                 },
@@ -605,7 +605,7 @@ const generatePolicyViewData = (): G6TreeNode => {
       {
         id: 'other-regions',
         label: 'All Other Regions',
-        style: {
+      style: { 
           fill: '#fff',
           stroke: '#ccc',
         },
@@ -613,7 +613,7 @@ const generatePolicyViewData = (): G6TreeNode => {
           {
             id: 'other-q1',
             label: 'April 11th Exemption?',
-            style: {
+          style: { 
               fill: '#f4f4f4',
               stroke: '#ddd',
             },
@@ -622,12 +622,12 @@ const generatePolicyViewData = (): G6TreeNode => {
                 id: 'other-a1-yes',
                 label: 'No Tariffs',
                 keyword: 'Other Regions No Tariffs Exemption',
-                style: {
+          style: {
                   fill: '#82D0D4',
                   stroke: '#82D0D4',
                 },
                 labelCfg: {
-                  style: {
+          style: { 
                     fill: 'black',
                   },
                 },
@@ -636,12 +636,12 @@ const generatePolicyViewData = (): G6TreeNode => {
                 id: 'other-a1-no',
                 label: '10% Tariff',
                 keyword: 'Other Regions 10% Tariff',
-                style: {
+          style: {
                   fill: '#5D70B4',
                   stroke: '#5D70B4',
                 },
                 labelCfg: {
-                  style: {
+          style: { 
                     fill: 'white',
                   },
                 },
@@ -649,7 +649,7 @@ const generatePolicyViewData = (): G6TreeNode => {
                   {
                     id: 'other-q2',
                     label: '>20% of Content from US?',
-                    style: {
+            style: {
                       fill: '#f4f4f4',
                       stroke: '#ddd',
                     },
@@ -658,12 +658,12 @@ const generatePolicyViewData = (): G6TreeNode => {
                         id: 'other-a2-yes',
                         label: 'US Content Is Tariff Free; Non-US Content Tariffed at 10%',
                         keyword: 'Other Regions 10% US Content Free',
-                        style: {
+          style: { 
                           fill: '#82D0D4',
                           stroke: '#82D0D4',
                         },
                         labelCfg: {
-                          style: {
+          style: {
                             fill: 'black',
                           },
                         },
@@ -672,12 +672,12 @@ const generatePolicyViewData = (): G6TreeNode => {
                         id: 'other-a2-no',
                         label: '10% Tariff on Full Customs Value',
                         keyword: 'Other Regions 10% Full Value',
-                        style: {
+          style: { 
                           fill: '#82D0D4',
                           stroke: '#82D0D4',
                         },
                         labelCfg: {
-                          style: {
+          style: {
                             fill: 'black',
                           },
                         },
@@ -753,7 +753,7 @@ const generateCountryViewData = (): G6TreeNode => {
       radius: 4,
     },
     labelCfg: {
-      style: {
+          style: {
         fill: 'white',
         fontSize: 16,
         fontWeight: 'bold' as G6FontWeight,
@@ -774,7 +774,7 @@ const generateCountryViewData = (): G6TreeNode => {
     const countryNode: G6TreeNode = {
       id: `country-${country.id}`,
       label: country.label,
-      style: {
+          style: { 
         fill: '#fff',
         stroke: '#ccc',
       },
@@ -798,7 +798,7 @@ const generateCountryViewData = (): G6TreeNode => {
             stroke: '#5D70B4',
           },
           labelCfg: {
-            style: {
+          style: {
               fill: 'white',
             },
           }
@@ -829,7 +829,7 @@ const generateCountryViewData = (): G6TreeNode => {
                 stroke: '#82D0D4',
               },
               labelCfg: {
-                style: {
+          style: {
                   fill: 'black',
                 },
               }
@@ -867,7 +867,7 @@ const generateItemViewData = (): G6TreeNode => {
       radius: 4,
     },
     labelCfg: {
-      style: {
+                style: {
         fill: 'white',
         fontSize: 16,
         fontWeight: 'bold',
@@ -890,7 +890,7 @@ const generateItemViewData = (): G6TreeNode => {
     const categoryNode: G6TreeNode = {
       id: `item-${category.id}`,
       label: category.label,
-      style: {
+              style: {
         fill: '#fff',
         stroke: '#ccc',
       },
@@ -1339,7 +1339,7 @@ export default function TariffDiagram() {
     padding: isMobile ? '10px' : '15px',
   };
 
-  return (
+    return (
     <div style={containerStyles}>
       <h2 style={{ 
         textAlign: 'center', 
@@ -1347,11 +1347,11 @@ export default function TariffDiagram() {
         color: '#333', 
         fontSize: isMobile ? '18px' : '24px'
       }}>
-        Trump 2025 Tariff Policy Visualization
-      </h2>
-      
-      <ViewTypeSelector viewType={viewType} setViewType={setViewType} />
-      
+          Trump 2025 Tariff Policy Visualization
+        </h2>
+        
+        <ViewTypeSelector viewType={viewType} setViewType={setViewType} />
+        
       <div 
         ref={containerRef} 
         style={{ 
@@ -1364,11 +1364,11 @@ export default function TariffDiagram() {
         }}
       >
         {/* G6 tree graph will be rendered in this container */}
-      </div>
-      
+        </div>
+
       <DiagramGuide />
       {selectedNodeInfo && <DetailPanel />}
       <TariffCalculationExample />
-    </div>
-  );
+      </div>
+    );
 } 

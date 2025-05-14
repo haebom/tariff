@@ -13,25 +13,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
     
-    // 소스 키 형식 변환
+    // Convert source key format
     const sourceKey = source.toLowerCase().replace(/\s+/g, '-');
     
-    // 해당 소스의 뉴스 ID 조회
+    // Get news IDs for the source
     const newsIds = await kv.smembers(`news:source:${sourceKey}`);
     
-    // 뉴스 항목 조회
+    // Retrieve news items
     const items: NewsItem[] = [];
     for (const id of newsIds) {
       const item = await kv.get(id) as NewsItem | null;
       if (item) items.push(item);
     }
     
-    // 발행일 기준 내림차순 정렬 (최신순)
+    // Sort by publication date in descending order (newest first)
     items.sort((a, b) => {
       return new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime();
     });
     
-    // 뉴스 소스 목록 조회
+    // Get list of news sources
     const allSources = await getAllSources();
     
     return res.status(200).json({ 
@@ -49,15 +49,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-// 모든 뉴스 소스 목록 조회
+// Get list of all news sources
 async function getAllSources(): Promise<string[]> {
   try {
-    // Redis 키 패턴으로 모든 소스 키 스캔
+    // Scan all source keys using Redis key pattern
     const keys = await kv.keys('news:source:*');
     
-    // 소스 이름 추출 (news:source: 접두사 제거)
+    // Extract source names (remove news:source: prefix)
     return keys.map(key => key.replace('news:source:', ''))
-      // 소스 이름 포맷 (첫 글자 대문자로)
+      // Format source names (capitalize first letter of each word)
       .map(source => source.split('-')
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ')

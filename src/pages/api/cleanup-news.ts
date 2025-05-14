@@ -3,17 +3,17 @@ import { kv } from '@vercel/kv';
 import { NewsItem } from '@/types/news';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // API 키로 보호 (크론 작업이나 관리자만 접근 가능)
+  // Protected by API key (only accessible by cron jobs or administrators)
   const apiKey = req.headers['x-api-key'];
   const expectedApiKey = process.env.CRON_API_KEY;
   
-  // API 키 검증이 활성화되어 있지만 키가 일치하지 않는 경우
+  // If API key validation is enabled but the key doesn't match
   if (expectedApiKey && apiKey !== expectedApiKey) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   
   try {
-    const { days = 60 } = req.query; // 기본적으로 60일 이상 지난 뉴스 삭제
+    const { days = 60 } = req.query; // Default: delete news older than 60 days
     const daysToKeep = Number(days);
     
     if (isNaN(daysToKeep) || daysToKeep < 7) {
@@ -23,12 +23,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
     
-    // X일 전 날짜 계산
+    // Calculate date X days ago
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
     const cutoffTimestamp = cutoffDate.getTime();
     
-    // 모든 뉴스 항목 가져오기
+    // Get all news items
     const newsIds = await kv.zrange('news:all', 0, -1) as string[];
     let removedCount = 0;
     
@@ -37,21 +37,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       if (!item) continue;
       
-      // 게시일 기준으로 오래된 항목 확인
+      // Check for old items based on publication date
       const pubDate = new Date(item.publishDate).getTime();
       
       if (pubDate < cutoffTimestamp) {
-        // 뉴스 항목 삭제
+        // Delete news item
         await kv.del(id);
         
-        // 날짜별 인덱스에서 삭제
+        // Remove from date index
         await kv.srem(`news:date:${item.dateStr}`, id);
         
-        // 출처별 인덱스에서 삭제
+        // Remove from source index
         const sourceKey = item.source.toLowerCase().replace(/\s+/g, '-');
         await kv.srem(`news:source:${sourceKey}`, id);
         
-        // 전체 뉴스 인덱스에서 삭제
+        // Remove from all news index
         await kv.zrem('news:all', id);
         
         removedCount++;
