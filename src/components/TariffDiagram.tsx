@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useSharedState } from '@/context/AppContext';
-import G6 from '@antv/g6';
+import G6, { TreeGraph, INode, NodeConfig, ShapeStyle, TreeGraphData, ModelConfig, IGroup, IShape } from '@antv/g6';
 import tariffPolicyDataJson from '@/data/tariffPolicyEn.json';
 const tariffPolicyData: TariffPolicy = tariffPolicyDataJson;
 
@@ -306,17 +306,30 @@ interface IndustryImpacts {
 }
 
 // G6용 트리 데이터 인터페이스 정의
-interface G6TreeNode {
+interface G6TreeNode extends TreeGraphData {
   id: string;
   label: string;
-  style?: Record<string, any>;
+  style?: ShapeStyle;
   children?: G6TreeNode[];
   type?: string;
   labelCfg?: {
-    style?: Record<string, any>;
+    style?: ShapeStyle;
   };
   keyword?: string;
-  details?: any;
+  details?: unknown;  // any 대신 unknown 사용
+}
+
+// 기존 타입을 Record<string, unknown>으로 변환하는 대신 unknown으로 캐스팅
+type G6FontWeight = 'normal' | 'bold' | 'bolder' | 'lighter' | number;
+
+// G6 이벤트 객체 타입 정의
+interface G6Event {
+  item: INode;
+  target: unknown;
+  x: number;
+  y: number;
+  canvasX: number;
+  canvasY: number;
 }
 
 // 초기 노드와 엣지 정의 부분은 유지 (데이터 변환에 사용할 수 있음)
@@ -703,7 +716,7 @@ const generateCountryViewData = (): G6TreeNode => {
       style: {
         fill: 'white',
         fontSize: 16,
-        fontWeight: 'bold',
+        fontWeight: 'bold' as G6FontWeight,
       },
     },
     children: []
@@ -730,14 +743,16 @@ const generateCountryViewData = (): G6TreeNode => {
 
     // 국가별 자식 노드 추가 (기존 코드에서 변환)
     if (country.id === 'china') {
+      // 중국 데이터는 명시적으로 타입 지정
       const chinaData = country.data as ChinaRegionalTariff;
+      
       if (chinaData.base_tariff_rate) {
         countryNode.children = countryNode.children || [];
         countryNode.children.push({
           id: `${countryNode.id}-base-tariff`,
           label: `Base Tariff: ${chinaData.base_tariff_rate}`,
           keyword: 'China Base Tariff',
-          details: chinaData,
+          details: chinaData as unknown,  // unknown으로 캐스팅
           style: {
             fill: '#5D70B4',
             stroke: '#5D70B4',
@@ -756,7 +771,7 @@ const generateCountryViewData = (): G6TreeNode => {
           const provisionNode: G6TreeNode = {
             id: `${countryNode.id}-provision-${idx}`,
             label: provision.category,
-            details: provision,
+            details: provision as unknown,  // unknown으로 캐스팅
             style: {
               fill: '#f4f4f4',
               stroke: '#ddd',
@@ -768,7 +783,7 @@ const generateCountryViewData = (): G6TreeNode => {
               id: `${provisionNode.id}-rate`,
               label: `Tariff: ${provision.tariff_rate}`,
               keyword: `China ${provision.category} Tariff`,
-              details: provision,
+              details: provision as unknown,  // unknown으로 캐스팅
               style: {
                 fill: '#82D0D4',
                 stroke: '#82D0D4',
@@ -859,7 +874,8 @@ const ViewTypeSelector = ({ viewType, setViewType }: { viewType: ViewType, setVi
       display: 'flex', 
       justifyContent: 'center', 
       marginBottom: '20px',
-      gap: '10px'
+      gap: '10px',
+      flexWrap: 'wrap' // 모바일에서 버튼이 줄바꿈되도록 설정
     }}>
       <button 
         onClick={() => setViewType('policy')}
@@ -871,7 +887,8 @@ const ViewTypeSelector = ({ viewType, setViewType }: { viewType: ViewType, setVi
           borderRadius: '4px',
           cursor: 'pointer',
           fontWeight: viewType === 'policy' ? 'bold' : 'normal',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+          margin: '4px' // 모바일에서 버튼 간 여백
         }}
       >
         Policy View
@@ -886,7 +903,8 @@ const ViewTypeSelector = ({ viewType, setViewType }: { viewType: ViewType, setVi
           borderRadius: '4px',
           cursor: 'pointer',
           fontWeight: viewType === 'country' ? 'bold' : 'normal',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+          margin: '4px' // 모바일에서 버튼 간 여백
         }}
       >
         By Country
@@ -901,7 +919,8 @@ const ViewTypeSelector = ({ viewType, setViewType }: { viewType: ViewType, setVi
           borderRadius: '4px',
           cursor: 'pointer',
           fontWeight: viewType === 'item' ? 'bold' : 'normal',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+          margin: '4px' // 모바일에서 버튼 간 여백
         }}
       >
         By Product
@@ -916,7 +935,7 @@ interface DetailedNodeInfo {
   description?: string;
   details?: {
     label: string;
-    value: any;
+    value: unknown;
   }[];
 }
 
@@ -925,7 +944,22 @@ export default function TariffDiagram() {
   const { setSelectedTariffKeyword } = useSharedState();
   const [selectedNodeInfo, setSelectedNodeInfo] = useState<DetailedNodeInfo | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const graphRef = useRef<any>(null);
+  const graphRef = useRef<TreeGraph | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // 모바일 화면 감지
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+    };
+  }, []);
 
   useEffect(() => {
     // 컴포넌트가 마운트될 때 G6 등록
@@ -935,10 +969,15 @@ export default function TariffDiagram() {
     G6.registerNode(
       'rect-node',
       {
-        draw(cfg: any, group: any) {
-          const width = cfg.style?.width || 120;
-          const height = cfg.style?.height || 40;
-          const radius = cfg.style?.radius || 4;
+        draw(cfg: ModelConfig, group: IGroup): IShape {
+          if (!cfg || !group) return group.addShape('rect', { attrs: {x: 0, y: 0, width: 0, height: 0 }}); // 기본 도형 반환
+          
+          const style = cfg.style || {};
+          const labelCfg = (cfg.labelCfg as { style?: ShapeStyle } || {});
+          
+          const width = (style.width as number) || 120;
+          const height = (style.height as number) || 40;
+          const radius = (style.radius as number) || 4;
           
           const keyshape = group.addShape('rect', {
             attrs: {
@@ -947,16 +986,17 @@ export default function TariffDiagram() {
               width,
               height,
               radius,
-              fill: cfg.style?.fill || '#fff',
-              stroke: cfg.style?.stroke || '#ccc',
+              fill: (style.fill as string) || '#fff',
+              stroke: (style.stroke as string) || '#ccc',
               cursor: 'pointer',
               lineWidth: 1.5,
-              ...cfg.style,
+              ...style,
             },
             name: 'rect-node-keyshape',
           });
           
           // 텍스트 추가
+          const labelStyle = labelCfg.style || {};
           group.addShape('text', {
             attrs: {
               text: cfg.label || '',
@@ -964,11 +1004,11 @@ export default function TariffDiagram() {
               y: 0,
               textAlign: 'center',
               textBaseline: 'middle',
-              fill: cfg.labelCfg?.style?.fill || '#333',
-              fontSize: cfg.labelCfg?.style?.fontSize || 12,
-              fontWeight: cfg.labelCfg?.style?.fontWeight || 'normal',
+              fill: (labelStyle.fill as string) || '#333',
+              fontSize: (labelStyle.fontSize as number) || 12,
+              fontWeight: (labelStyle.fontWeight as G6FontWeight) || 'normal',
               cursor: 'pointer',
-              ...cfg.labelCfg?.style,
+              ...labelStyle,
             },
             name: 'rect-node-label',
           });
@@ -1009,7 +1049,8 @@ export default function TariffDiagram() {
     // 컨테이너 너비 계산
     const container = containerRef.current;
     const width = container.clientWidth;
-    const height = 600;
+    // 모바일에서는 높이를 줄임
+    const height = isMobile ? 450 : 600;
     
     // 새 그래프 인스턴스 생성
     graphRef.current = new G6.TreeGraph({
@@ -1017,11 +1058,11 @@ export default function TariffDiagram() {
       width,
       height,
       modes: {
-        default: ['drag-canvas', 'zoom-canvas'],
+        default: isMobile ? ['drag-canvas', 'zoom-canvas', 'drag-node'] : ['drag-canvas', 'zoom-canvas'],
       },
       defaultNode: {
         type: 'rect-node',
-        size: [120, 40],
+        size: isMobile ? [100, 35] : [120, 40],
         style: {
           fill: '#fff',
           stroke: '#ccc',
@@ -1030,7 +1071,7 @@ export default function TariffDiagram() {
         labelCfg: {
           style: {
             fill: '#333',
-            fontSize: 12,
+            fontSize: isMobile ? 10 : 12,
           },
         },
       },
@@ -1044,40 +1085,45 @@ export default function TariffDiagram() {
       layout: {
         type: 'compactBox',
         direction: 'LR',
-        getId: function getId(d: any) {
+        getId: function getId(d: ModelConfig) {
           return d.id;
         },
         getHeight: function getHeight() {
-          return 16;
+          return isMobile ? 12 : 16;
         },
         getWidth: function getWidth() {
-          return 16;
+          return isMobile ? 12 : 16;
         },
         getVGap: function getVGap() {
-          return 40;
+          return isMobile ? 20 : 40;
         },
         getHGap: function getHGap() {
-          return 70;
+          return isMobile ? 50 : 70;
         },
       },
       fitView: true,
       animate: true,
+      // 모바일에서는 작게 시작
+      minZoom: isMobile ? 0.3 : 0.5,
+      maxZoom: 2,
     });
     
     // 노드 클릭 이벤트 처리
-    graphRef.current.on('node:click', (e: any) => {
-      const node = e.item.getModel();
-      if (node.keyword) {
-        setSelectedTariffKeyword(node.keyword);
+    graphRef.current.on('node:click', (e: G6Event) => {
+      const nodeModel = e.item.getModel() as G6TreeNode;
+      if (nodeModel.keyword) {
+        setSelectedTariffKeyword(nodeModel.keyword);
         
-        let details: { label: string; value: any }[] = [];
+        let details: { label: string; value: unknown }[] = [];
         let description = '';
         
-        if (node.details) {
-          if (typeof node.details === 'object') {
-            description = node.details.description || '';
+        if (nodeModel.details) {
+          if (typeof nodeModel.details === 'object' && nodeModel.details !== null) {
+            // 명시적으로 object 타입 체크 및 null 체크 추가
+            const detailsObj = nodeModel.details as Record<string, unknown>;
+            description = (detailsObj.description as string) || '';
             
-            details = Object.entries(node.details)
+            details = Object.entries(detailsObj)
               .filter(([key]) => key !== 'description')
               .map(([key, value]) => ({
                 label: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' '),
@@ -1087,7 +1133,7 @@ export default function TariffDiagram() {
         }
         
         setSelectedNodeInfo({
-          title: node.label,
+          title: nodeModel.label,
           description,
           details: details.length > 0 ? details : undefined
         });
@@ -1099,12 +1145,18 @@ export default function TariffDiagram() {
     graphRef.current.render();
     graphRef.current.fitView();
     
+    // 모바일에서는 초기 줌 레벨 조정
+    if (isMobile) {
+      graphRef.current.zoomTo(0.5);
+    }
+    
     // 창 크기 변경 대응
     const handleResize = () => {
       if (!containerRef.current || !graphRef.current) return;
       const container = containerRef.current;
       const width = container.clientWidth;
-      graphRef.current.changeSize(width, 600);
+      const height = isMobile ? 450 : 600;
+      graphRef.current.changeSize(width, height);
       graphRef.current.fitView();
     };
     
@@ -1113,7 +1165,7 @@ export default function TariffDiagram() {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, [viewType, setSelectedTariffKeyword]);
+  }, [viewType, setSelectedTariffKeyword, isMobile]);
 
   // 세부 정보 패널 컴포넌트
   const DetailPanel = () => {
@@ -1122,16 +1174,16 @@ export default function TariffDiagram() {
     return (
       <div style={{
         position: 'absolute',
-        right: '20px',
-        top: '100px',
-        width: '300px',
+        right: isMobile ? '10px' : '20px',
+        top: isMobile ? '70px' : '100px',
+        width: isMobile ? 'calc(100% - 20px)' : '300px',
         padding: '15px',
         backgroundColor: '#fff',
         boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
         borderRadius: '8px',
         zIndex: 10,
         border: '1px solid #ddd',
-        maxHeight: '600px',
+        maxHeight: isMobile ? '300px' : '600px',
         overflowY: 'auto'
       }}>
         <div style={{ 
@@ -1144,7 +1196,7 @@ export default function TariffDiagram() {
         }}>
           <h3 style={{ 
             margin: 0, 
-            fontSize: '16px',
+            fontSize: isMobile ? '14px' : '16px',
             color: '#333',
             fontWeight: 'bold'
           }}>{selectedNodeInfo.title}</h3>
@@ -1175,7 +1227,7 @@ export default function TariffDiagram() {
         {selectedNodeInfo.description && (
           <p style={{ 
             margin: '10px 0', 
-            fontSize: '14px',
+            fontSize: isMobile ? '12px' : '14px',
             color: '#444',
           }}>{selectedNodeInfo.description}</p>
         )}
@@ -1190,13 +1242,13 @@ export default function TariffDiagram() {
                 borderRadius: '4px'
               }}>
                 <strong style={{ 
-                  fontSize: '13px',
+                  fontSize: isMobile ? '11px' : '13px',
                   color: '#5D70B4',
                   display: 'block',
                   marginBottom: '3px'
                 }}>{detail.label}:</strong> 
                 <span style={{ 
-                  fontSize: '14px', 
+                  fontSize: isMobile ? '12px' : '14px', 
                   color: '#333',
                   wordBreak: 'break-word',
                   whiteSpace: typeof detail.value === 'object' && detail.value !== null ? 'pre-wrap' : 'normal',
@@ -1204,7 +1256,7 @@ export default function TariffDiagram() {
                 }}>
                   {typeof detail.value === 'object' && detail.value !== null
                     ? JSON.stringify(detail.value, null, 2)
-                    : detail.value}
+                    : String(detail.value)}
                 </span>
               </div>
             ))}
@@ -1218,22 +1270,23 @@ export default function TariffDiagram() {
   const DiagramGuide = () => (
     <div style={{
       position: 'absolute',
-      left: '20px',
-      bottom: '20px',
-      padding: '8px 12px',
+      left: isMobile ? '10px' : '20px',
+      bottom: isMobile ? '10px' : '20px',
+      padding: isMobile ? '6px 10px' : '8px 12px',
       backgroundColor: 'rgba(255,255,255,0.9)',
       borderRadius: '4px',
       border: '1px solid #ddd',
-      fontSize: '13px',
+      fontSize: isMobile ? '11px' : '13px',
       color: '#666',
       boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-      maxWidth: '250px'
+      maxWidth: isMobile ? '200px' : '250px'
     }}>
       <p style={{ margin: '0 0 5px 0', fontWeight: 'bold' }}>다이어그램 사용법:</p>
       <ul style={{ margin: '0', paddingLeft: '20px' }}>
         <li>캔버스를 드래그하여 이동</li>
         <li>마우스 휠로 확대/축소</li>
         <li>노드를 클릭하면 세부 정보 표시</li>
+        {isMobile && <li>두 손가락 제스처로 확대/축소</li>}
       </ul>
     </div>
   );
@@ -1241,14 +1294,19 @@ export default function TariffDiagram() {
   // 컨테이너 스타일
   const containerStyles = {
     width: '100%',
-    height: '800px',
+    height: isMobile ? '600px' : '800px',
     position: 'relative' as const,
-    padding: '15px',
+    padding: isMobile ? '10px' : '15px',
   };
 
   return (
     <div style={containerStyles}>
-      <h2 style={{ textAlign: 'center', margin: '0 0 15px 0', color: '#333' }}>
+      <h2 style={{ 
+        textAlign: 'center', 
+        margin: '0 0 15px 0', 
+        color: '#333', 
+        fontSize: isMobile ? '18px' : '24px'
+      }}>
         Trump 2025 Tariff Policy Visualization
       </h2>
       
@@ -1257,7 +1315,7 @@ export default function TariffDiagram() {
       <div 
         ref={containerRef} 
         style={{ 
-          height: '600px', 
+          height: isMobile ? '450px' : '600px', 
           border: '1px solid #ddd',
           borderRadius: '8px',
           overflow: 'hidden',
